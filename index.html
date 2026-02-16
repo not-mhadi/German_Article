@@ -3,331 +3,376 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Deutsche Lernwerkstatt | German Learning Platform</title>
+<title>Deutsche Lernwerkstatt</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    :root {
-        --cream: #faf8f3;
-        --ink: #1a1a1a;
-        --ink-light: #4a4a4a;
-        --accent: #d4663b;
-        --accent-light: #e89277;
-        --forest: #2d5016;
-        --sage: #8ba888;
-        --paper: #ffffff;
-        --shadow: rgba(0, 0, 0, 0.08);
-        --glow: rgba(212, 102, 59, 0.15);
-    }
-
     * {
         margin: 0;
         padding: 0;
         box-sizing: border-box;
     }
 
+    :root {
+        --bg: #0a0a0a;
+        --surface: #1a1a1a;
+        --surface-hover: #252525;
+        --border: #2a2a2a;
+        --text: #e8e8e8;
+        --text-dim: #a0a0a0;
+        --text-subtle: #6a6a6a;
+        --accent: #3b82f6;
+        --accent-hover: #2563eb;
+        --success: #10b981;
+        --error: #ef4444;
+    }
+
     body {
-        font-family: 'DM Sans', sans-serif;
-        background: var(--cream);
-        color: var(--ink);
-        line-height: 1.7;
-        overflow-x: hidden;
+        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+        background: var(--bg);
+        color: var(--text);
+        line-height: 1.6;
+        min-height: 100vh;
+    }
+
+    .container {
+        max-width: 900px;
+        margin: 0 auto;
+        padding: 2rem 1.5rem;
     }
 
     /* Header */
     .header {
-        background: var(--paper);
-        border-bottom: 3px solid var(--accent);
-        padding: 2rem 0;
-        box-shadow: 0 4px 20px var(--shadow);
-        position: sticky;
-        top: 0;
-        z-index: 100;
-    }
-
-    .header-content {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 0 2rem;
-        display: flex;
-        justify-content: space-between;
-        align-items: center;
+        padding: 2rem 0 3rem;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 2rem;
     }
 
     .logo {
-        font-family: 'Literata', serif;
-        font-size: 1.8rem;
+        font-size: 1.5rem;
         font-weight: 700;
-        color: var(--accent);
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
+        color: var(--text);
+        margin-bottom: 0.5rem;
     }
 
-    .logo-icon {
-        width: 36px;
-        height: 36px;
-        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
-        border-radius: 8px;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        color: white;
-        font-weight: 700;
+    .subtitle {
+        color: var(--text-dim);
+        font-size: 0.95rem;
     }
 
-    .progress-bar-container {
-        flex: 1;
-        max-width: 300px;
-        margin: 0 2rem;
-    }
-
-    .progress-label {
-        font-size: 0.75rem;
-        color: var(--ink-light);
-        margin-bottom: 0.25rem;
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    .progress-bar {
-        height: 8px;
-        background: #e0e0e0;
-        border-radius: 10px;
-        overflow: hidden;
-        position: relative;
-    }
-
-    .progress-fill {
-        height: 100%;
-        background: linear-gradient(90deg, var(--forest) 0%, var(--sage) 100%);
-        border-radius: 10px;
-        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .progress-fill::after {
-        content: '';
-        position: absolute;
+    /* API Key Modal */
+    .modal {
+        display: none;
+        position: fixed;
         top: 0;
         left: 0;
-        right: 0;
-        bottom: 0;
-        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
-        animation: shimmer 2s infinite;
+        width: 100%;
+        height: 100%;
+        background: rgba(0, 0, 0, 0.8);
+        z-index: 1000;
+        align-items: center;
+        justify-content: center;
     }
 
-    @keyframes shimmer {
-        0% { transform: translateX(-100%); }
-        100% { transform: translateX(100%); }
-    }
-
-    .stats {
+    .modal.active {
         display: flex;
-        gap: 1.5rem;
+    }
+
+    .modal-content {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 12px;
+        padding: 2rem;
+        max-width: 500px;
+        width: 90%;
+    }
+
+    .modal-title {
+        font-size: 1.5rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+    }
+
+    .modal-description {
+        color: var(--text-dim);
+        margin-bottom: 1.5rem;
+        line-height: 1.6;
+    }
+
+    .modal-description a {
+        color: var(--accent);
+        text-decoration: none;
+    }
+
+    .modal-description a:hover {
+        text-decoration: underline;
+    }
+
+    .input-group {
+        margin-bottom: 1.5rem;
+    }
+
+    .input-label {
+        display: block;
+        margin-bottom: 0.5rem;
+        font-weight: 500;
         font-size: 0.9rem;
     }
 
-    .stat-item {
+    .input {
+        width: 100%;
+        padding: 0.75rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
+        font-family: inherit;
+        font-size: 0.95rem;
+    }
+
+    .input:focus {
+        outline: none;
+        border-color: var(--accent);
+    }
+
+    .checkbox-group {
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .checkbox {
+        width: 18px;
+        height: 18px;
+        cursor: pointer;
+    }
+
+    .checkbox-label {
+        font-size: 0.9rem;
+        color: var(--text-dim);
+        cursor: pointer;
+    }
+
+    .modal-actions {
+        display: flex;
+        gap: 0.75rem;
+    }
+
+    /* Generate Section */
+    .generate-section {
+        margin-bottom: 3rem;
+    }
+
+    .api-key-status {
+        display: inline-flex;
+        align-items: center;
+        gap: 0.5rem;
+        margin-left: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-subtle);
+    }
+
+    .status-dot {
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--error);
+    }
+
+    .status-dot.active {
+        background: var(--success);
+    }
+
+    .btn {
+        background: var(--accent);
+        color: white;
+        border: none;
+        padding: 0.875rem 1.75rem;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-weight: 500;
+        cursor: pointer;
+        transition: all 0.2s;
+        font-family: inherit;
+    }
+
+    .btn:hover:not(:disabled) {
+        background: var(--accent-hover);
+        transform: translateY(-1px);
+    }
+
+    .btn:disabled {
+        opacity: 0.5;
+        cursor: not-allowed;
+    }
+
+    .btn-secondary {
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.625rem 1.25rem;
+        font-size: 0.875rem;
+    }
+
+    .btn-secondary:hover:not(:disabled) {
+        background: var(--surface-hover);
+    }
+
+    .btn-outline {
+        background: transparent;
+        border: 1px solid var(--border);
+        color: var(--text);
+    }
+
+    .btn-outline:hover:not(:disabled) {
+        background: var(--surface-hover);
+    }
+
+    /* Loading State */
+    .loading {
+        display: none;
         text-align: center;
+        padding: 3rem 0;
+    }
+
+    .loading.active {
+        display: block;
+    }
+
+    .spinner {
+        width: 40px;
+        height: 40px;
+        border: 3px solid var(--border);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 0.8s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    .loading-text {
+        color: var(--text-dim);
+        font-size: 0.95rem;
+    }
+
+    /* Stats Bar */
+    .stats {
+        display: flex;
+        gap: 2rem;
+        padding: 1.5rem 0;
+        border-bottom: 1px solid var(--border);
+        margin-bottom: 2rem;
+    }
+
+    .stat {
+        flex: 1;
     }
 
     .stat-value {
-        font-size: 1.5rem;
-        font-weight: 700;
+        font-size: 1.75rem;
+        font-weight: 600;
         color: var(--accent);
         display: block;
     }
 
     .stat-label {
-        font-size: 0.7rem;
-        color: var(--ink-light);
+        font-size: 0.8rem;
+        color: var(--text-subtle);
         text-transform: uppercase;
         letter-spacing: 0.5px;
     }
 
-    /* Main Container */
-    .container {
-        max-width: 1200px;
-        margin: 0 auto;
-        padding: 3rem 2rem;
-    }
-
-    /* Article Header */
-    .article-header {
-        background: var(--paper);
-        padding: 3rem;
-        border-radius: 16px;
-        margin-bottom: 3rem;
-        box-shadow: 0 8px 30px var(--shadow);
-        border-left: 6px solid var(--accent);
-        animation: slideUp 0.6s ease-out;
-    }
-
-    @keyframes slideUp {
-        from {
-            opacity: 0;
-            transform: translateY(30px);
-        }
-        to {
-            opacity: 1;
-            transform: translateY(0);
-        }
-    }
-
-    .article-title {
-        font-family: 'Literata', serif;
-        font-size: 2.5rem;
-        line-height: 1.3;
-        margin-bottom: 1rem;
-        color: var(--ink);
-    }
-
-    .article-summary {
-        font-size: 1.1rem;
-        color: var(--ink-light);
-        line-height: 1.8;
-        padding: 1.5rem;
-        background: var(--cream);
-        border-radius: 8px;
-        border-left: 3px solid var(--sage);
-    }
-
-    /* View Toggles */
-    .view-controls {
+    /* Controls */
+    .controls {
         display: flex;
-        gap: 1rem;
+        gap: 0.75rem;
         margin-bottom: 2rem;
         flex-wrap: wrap;
     }
 
-    .toggle-btn {
-        padding: 0.75rem 1.5rem;
-        background: var(--paper);
-        border: 2px solid var(--accent);
-        border-radius: 50px;
-        color: var(--accent);
+    /* Article Header */
+    .article-header {
+        margin-bottom: 2rem;
+        padding-bottom: 2rem;
+        border-bottom: 1px solid var(--border);
+    }
+
+    .article-title {
+        font-size: 1.75rem;
         font-weight: 600;
-        cursor: pointer;
-        transition: all 0.3s ease;
-        font-size: 0.9rem;
-        font-family: 'DM Sans', sans-serif;
+        margin-bottom: 1rem;
+        line-height: 1.3;
     }
 
-    .toggle-btn:hover {
-        background: var(--accent);
-        color: white;
-        transform: translateY(-2px);
-        box-shadow: 0 4px 12px var(--glow);
+    .article-summary {
+        color: var(--text-dim);
+        font-size: 1rem;
+        line-height: 1.7;
     }
 
-    .toggle-btn.active {
-        background: var(--accent);
-        color: white;
+    .article-meta {
+        display: flex;
+        gap: 1rem;
+        margin-top: 1rem;
+        font-size: 0.85rem;
+        color: var(--text-subtle);
     }
 
     /* Translation Blocks */
     .translation-block {
-        background: var(--paper);
-        padding: 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 15px var(--shadow);
-        transition: all 0.3s ease;
-        opacity: 0;
-        animation: fadeIn 0.5s ease-out forwards;
-        animation-delay: calc(var(--index) * 0.05s);
-        border-left: 4px solid transparent;
-    }
-
-    @keyframes fadeIn {
-        to {
-            opacity: 1;
-        }
+        background: var(--surface);
+        border: 1px solid var(--border);
+        border-radius: 8px;
+        padding: 1.5rem;
+        margin-bottom: 1rem;
+        transition: all 0.2s;
     }
 
     .translation-block:hover {
-        box-shadow: 0 8px 25px var(--shadow);
-        border-left-color: var(--accent);
+        border-color: var(--accent);
+    }
+
+    .sentence-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1rem;
     }
 
     .sentence-number {
-        display: inline-block;
-        width: 32px;
-        height: 32px;
         background: var(--accent);
         color: white;
+        width: 28px;
+        height: 28px;
         border-radius: 50%;
-        text-align: center;
-        line-height: 32px;
-        font-weight: 700;
+        display: flex;
+        align-items: center;
+        justify-content: center;
         font-size: 0.85rem;
-        margin-right: 1rem;
+        font-weight: 600;
         flex-shrink: 0;
     }
 
-    .paragraph-source {
-        font-size: 1.25rem;
-        line-height: 1.8;
-        margin-bottom: 1rem;
-        color: var(--ink);
-        display: flex;
-        align-items: flex-start;
-    }
-
-    .sentence-text {
+    .german-text {
+        font-size: 1.05rem;
+        line-height: 1.7;
         flex: 1;
     }
 
-    .paragraph-translation {
-        background: linear-gradient(135deg, #e8f4f8 0%, #f0f7ff 100%);
-        color: var(--forest);
-        font-size: 1.05rem;
-        padding: 1.25rem;
-        border-radius: 8px;
-        font-style: italic;
-        border-left: 3px solid var(--sage);
-        margin-bottom: 1rem;
-        transition: all 0.3s ease;
-    }
-
-    .translation-hidden {
-        display: none;
-    }
-
-    .grammar-note {
-        background: #fff8f0;
-        padding: 0.75rem 1rem;
-        border-radius: 6px;
-        font-size: 0.9rem;
-        color: var(--ink-light);
-        border-left: 3px solid var(--accent-light);
-        margin-top: 0.5rem;
-        display: flex;
-        align-items: flex-start;
-        gap: 0.5rem;
-    }
-
-    .grammar-note::before {
-        content: "💡";
-        font-size: 1rem;
-    }
-
-    /* Hover Word Tooltips */
     .hover-word {
         position: relative;
         cursor: help;
-        border-bottom: 2px dotted var(--accent);
-        display: inline-block;
-        transition: all 0.2s ease;
+        border-bottom: 1px dotted var(--accent);
         padding: 0 2px;
     }
 
     .hover-word:hover {
-        background: var(--glow);
-        border-bottom-style: solid;
+        color: var(--accent);
     }
 
     .hover-word::after {
@@ -335,232 +380,173 @@
         position: absolute;
         bottom: 125%;
         left: 50%;
-        transform: translateX(-50%) scale(0.9);
-        background: var(--ink);
-        color: white;
-        padding: 0.5rem 0.75rem;
-        border-radius: 6px;
-        font-size: 0.85rem;
-        font-weight: 600;
+        transform: translateX(-50%);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        color: var(--text);
+        padding: 0.375rem 0.625rem;
+        border-radius: 4px;
+        font-size: 0.8rem;
         white-space: nowrap;
         opacity: 0;
         visibility: hidden;
-        transition: all 0.2s ease;
+        transition: all 0.2s;
         z-index: 10;
         pointer-events: none;
-        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
     }
 
-    .hover-word::before {
-        content: '';
-        position: absolute;
-        bottom: 100%;
-        left: 50%;
-        transform: translateX(-50%);
-        border-width: 6px;
-        border-style: solid;
-        border-color: var(--ink) transparent transparent transparent;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.2s ease;
-        z-index: 10;
-    }
-
-    .hover-word:hover::after,
-    .hover-word:hover::before {
+    .hover-word:hover::after {
         opacity: 1;
         visibility: visible;
-        transform: translateX(-50%) scale(1);
+    }
+
+    .english-text {
+        background: var(--bg);
+        border: 1px solid var(--border);
+        color: var(--text-dim);
+        padding: 1rem;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        font-style: italic;
+        margin-top: 1rem;
+        transition: all 0.2s;
+    }
+
+    .english-text.hidden {
+        display: none;
+    }
+
+    .grammar-note {
+        margin-top: 0.75rem;
+        padding: 0.75rem;
+        background: var(--bg);
+        border-left: 3px solid var(--accent);
+        border-radius: 4px;
+        font-size: 0.875rem;
+        color: var(--text-dim);
     }
 
     /* Vocabulary Section */
     .vocab-section {
-        background: var(--paper);
-        padding: 2.5rem;
-        border-radius: 12px;
-        margin-bottom: 3rem;
-        box-shadow: 0 4px 15px var(--shadow);
+        margin: 3rem 0;
     }
 
     .section-title {
-        font-family: 'Literata', serif;
-        font-size: 2rem;
+        font-size: 1.25rem;
+        font-weight: 600;
         margin-bottom: 1.5rem;
-        color: var(--accent);
-        display: flex;
-        align-items: center;
-        gap: 0.75rem;
-    }
-
-    .section-title::before {
-        content: '';
-        width: 4px;
-        height: 2rem;
-        background: var(--accent);
-        border-radius: 2px;
+        padding-bottom: 0.75rem;
+        border-bottom: 1px solid var(--border);
     }
 
     .vocab-grid {
         display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
-        gap: 1.25rem;
+        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
+        gap: 1rem;
     }
 
     .vocab-card {
-        background: var(--cream);
+        background: var(--surface);
+        border: 1px solid var(--border);
         padding: 1.25rem;
-        border-radius: 10px;
-        border: 2px solid transparent;
-        transition: all 0.3s ease;
-        cursor: pointer;
+        border-radius: 6px;
+        transition: all 0.2s;
     }
 
     .vocab-card:hover {
         border-color: var(--accent);
-        transform: translateY(-3px);
-        box-shadow: 0 6px 20px var(--shadow);
+        transform: translateY(-2px);
     }
 
     .vocab-word {
-        font-size: 1.3rem;
-        font-weight: 700;
-        color: var(--ink);
+        font-size: 1.1rem;
+        font-weight: 600;
         margin-bottom: 0.5rem;
     }
 
     .vocab-translation {
         color: var(--accent);
-        font-weight: 600;
+        font-weight: 500;
         margin-bottom: 0.75rem;
-        font-size: 1.05rem;
     }
 
     .vocab-example {
-        font-size: 0.9rem;
-        color: var(--ink-light);
+        font-size: 0.85rem;
+        color: var(--text-subtle);
         font-style: italic;
         padding-top: 0.75rem;
-        border-top: 1px solid #e0e0e0;
+        border-top: 1px solid var(--border);
     }
 
     /* Quiz Section */
     .quiz-section {
-        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
-        padding: 3rem;
-        border-radius: 16px;
-        box-shadow: 0 8px 30px var(--shadow);
+        margin: 3rem 0;
     }
 
     .quiz-question {
-        background: var(--paper);
-        padding: 2rem;
-        border-radius: 12px;
-        margin-bottom: 2rem;
-        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
-        transition: all 0.3s ease;
-    }
-
-    .quiz-question:hover {
-        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        border-radius: 8px;
+        margin-bottom: 1.5rem;
     }
 
     .question-header {
         display: flex;
         align-items: center;
         gap: 1rem;
-        margin-bottom: 1.5rem;
+        margin-bottom: 1.25rem;
     }
 
     .question-number {
-        width: 40px;
-        height: 40px;
-        background: linear-gradient(135deg, var(--forest) 0%, var(--sage) 100%);
+        background: var(--accent);
         color: white;
+        width: 32px;
+        height: 32px;
         border-radius: 50%;
         display: flex;
         align-items: center;
         justify-content: center;
-        font-weight: 700;
-        font-size: 1.1rem;
+        font-weight: 600;
         flex-shrink: 0;
     }
 
-    .question-title {
-        font-size: 1.2rem;
-        font-weight: 600;
-        color: var(--ink);
+    .question-text {
+        font-size: 1.05rem;
+        font-weight: 500;
         flex: 1;
     }
 
     .option-btn {
         width: 100%;
         text-align: left;
-        padding: 1rem 1.25rem;
+        padding: 0.875rem 1rem;
         margin-bottom: 0.75rem;
-        background: var(--cream);
-        border: 2px solid #ddd;
-        border-radius: 10px;
-        font-size: 1rem;
+        background: var(--bg);
+        border: 1px solid var(--border);
+        border-radius: 6px;
+        color: var(--text);
         cursor: pointer;
-        transition: all 0.3s ease;
-        font-family: 'DM Sans', sans-serif;
-        color: var(--ink);
-        position: relative;
-        overflow: hidden;
-    }
-
-    .option-btn::before {
-        content: '';
-        position: absolute;
-        left: 0;
-        top: 0;
-        height: 100%;
-        width: 4px;
-        background: transparent;
-        transition: all 0.3s ease;
+        transition: all 0.2s;
+        font-family: inherit;
+        font-size: 0.95rem;
     }
 
     .option-btn:hover:not(:disabled) {
-        background: white;
+        background: var(--surface-hover);
         border-color: var(--accent);
-        transform: translateX(4px);
     }
 
     .option-btn.correct {
-        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
-        border-color: var(--forest);
-        color: var(--forest);
-        font-weight: 600;
-    }
-
-    .option-btn.correct::before {
-        background: var(--forest);
-    }
-
-    .option-btn.correct::after {
-        content: '✓';
-        position: absolute;
-        right: 1.25rem;
-        font-size: 1.5rem;
-        color: var(--forest);
+        background: rgba(16, 185, 129, 0.1);
+        border-color: var(--success);
+        color: var(--success);
     }
 
     .option-btn.wrong {
-        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
-        border-color: #dc3545;
-        color: #721c24;
-    }
-
-    .option-btn.wrong::before {
-        background: #dc3545;
-    }
-
-    .option-btn.wrong::after {
-        content: '✗';
-        position: absolute;
-        right: 1.25rem;
-        font-size: 1.5rem;
-        color: #dc3545;
+        background: rgba(239, 68, 68, 0.1);
+        border-color: var(--error);
+        color: var(--error);
     }
 
     .option-btn:disabled {
@@ -570,34 +556,24 @@
     .explanation {
         margin-top: 1rem;
         padding: 1rem;
-        background: #fff8e6;
-        border-left: 4px solid #ffc107;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        color: var(--ink-light);
+        background: var(--bg);
+        border-left: 3px solid var(--accent);
+        border-radius: 4px;
+        font-size: 0.9rem;
+        color: var(--text-dim);
         display: none;
     }
 
     .explanation.show {
         display: block;
-        animation: slideDown 0.3s ease-out;
     }
 
-    @keyframes slideDown {
-        from {
-            opacity: 0;
-            max-height: 0;
-        }
-        to {
-            opacity: 1;
-            max-height: 200px;
-        }
-    }
-
+    /* Score Display */
     .quiz-score {
-        background: var(--paper);
-        padding: 2rem;
-        border-radius: 12px;
+        background: var(--surface);
+        border: 1px solid var(--border);
+        padding: 1.5rem;
+        border-radius: 8px;
         text-align: center;
         margin-bottom: 2rem;
         display: none;
@@ -605,143 +581,175 @@
 
     .quiz-score.show {
         display: block;
-        animation: slideUp 0.5s ease-out;
     }
 
-    .score-display {
-        font-size: 3rem;
+    .score-value {
+        font-size: 2.5rem;
         font-weight: 700;
         color: var(--accent);
-        font-family: 'Literata', serif;
+        margin-bottom: 0.5rem;
     }
 
     .score-message {
-        font-size: 1.2rem;
-        color: var(--ink-light);
-        margin-top: 0.5rem;
+        color: var(--text-dim);
+        font-size: 1rem;
     }
 
-    /* Loading State */
-    .loading {
+    /* Empty State */
+    .empty-state {
         text-align: center;
         padding: 4rem 2rem;
+        color: var(--text-dim);
     }
 
-    .spinner {
-        width: 50px;
-        height: 50px;
-        border: 4px solid var(--cream);
-        border-top-color: var(--accent);
-        border-radius: 50%;
-        animation: spin 1s linear infinite;
-        margin: 0 auto 1rem;
+    .empty-state-icon {
+        font-size: 3rem;
+        margin-bottom: 1rem;
     }
 
-    @keyframes spin {
-        to { transform: rotate(360deg); }
+    .empty-state-title {
+        font-size: 1.25rem;
+        font-weight: 600;
+        margin-bottom: 0.5rem;
+        color: var(--text);
+    }
+
+    .empty-state-text {
+        font-size: 0.95rem;
     }
 
     /* Responsive */
     @media (max-width: 768px) {
-        .header-content {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .progress-bar-container {
-            width: 100%;
-            max-width: 100%;
-            margin: 1rem 0;
+        .container {
+            padding: 1.5rem 1rem;
         }
 
         .stats {
-            width: 100%;
-            justify-content: space-around;
-        }
-
-        .article-title {
-            font-size: 1.8rem;
+            flex-direction: column;
+            gap: 1rem;
         }
 
         .vocab-grid {
             grid-template-columns: 1fr;
         }
 
-        .view-controls {
+        .controls {
             flex-direction: column;
         }
 
-        .toggle-btn {
+        .btn, .btn-secondary {
             width: 100%;
+        }
+
+        .modal-content {
+            padding: 1.5rem;
         }
     }
 </style>
 </head>
 <body>
 
-    <header class="header">
-        <div class="header-content">
-            <div class="logo">
-                <div class="logo-icon">DE</div>
-                Deutsche Lernwerkstatt
-            </div>
-            <div class="progress-bar-container">
-                <div class="progress-label">Lesson Progress</div>
-                <div class="progress-bar">
-                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
-                </div>
-            </div>
-            <div class="stats">
-                <div class="stat-item">
-                    <span class="stat-value" id="sentenceCount">0</span>
-                    <span class="stat-label">Sentences</span>
-                </div>
-                <div class="stat-item">
-                    <span class="stat-value" id="quizCount">0</span>
-                    <span class="stat-label">Questions</span>
-                </div>
-            </div>
+<!-- API Key Modal -->
+<div id="apiKeyModal" class="modal active">
+    <div class="modal-content">
+        <h2 class="modal-title">Enter Your Groq API Key</h2>
+        <p class="modal-description">
+            To use this app, you need a free Groq API key. 
+            <a href="https://console.groq.com/" target="_blank">Get one here →</a>
+        </p>
+        <div class="input-group">
+            <label class="input-label">Groq API Key</label>
+            <input 
+                type="password" 
+                id="apiKeyInput" 
+                class="input" 
+                placeholder="gsk_..."
+            />
         </div>
-    </header>
-
-    <div class="container">
-        <div id="loadingState" class="loading">
-            <div class="spinner"></div>
-            <h2>Lade Lektion... Loading your lesson...</h2>
+        <div class="checkbox-group">
+            <input type="checkbox" id="rememberKey" class="checkbox" />
+            <label for="rememberKey" class="checkbox-label">Remember my API key (stored locally)</label>
         </div>
-
-        <div id="app" style="display: none;">
-            <div class="article-header">
-                <h1 class="article-title" id="articleTitle">Loading Article...</h1>
-                <div class="article-summary" id="articleSummary"></div>
-            </div>
-
-            <div class="view-controls">
-                <button class="toggle-btn active" id="toggleTranslations">
-                    Show/Hide Translations
-                </button>
-                <button class="toggle-btn" id="toggleTooltips">
-                    Enable Word Tooltips
-                </button>
-            </div>
-
-            <div id="articleContent"></div>
-
-            <div class="vocab-section" id="vocabSection" style="display: none;">
-                <h2 class="section-title">📚 Key Vocabulary</h2>
-                <div class="vocab-grid" id="vocabGrid"></div>
-            </div>
-
-            <div class="quiz-section">
-                <h2 class="section-title">🎯 Test Your Understanding</h2>
-                <div class="quiz-score" id="quizScore">
-                    <div class="score-display" id="scoreDisplay">0/0</div>
-                    <div class="score-message" id="scoreMessage">Complete the quiz to see your score!</div>
-                </div>
-                <div id="quizContent"></div>
-            </div>
+        <div class="modal-actions">
+            <button id="saveApiKey" class="btn" style="flex: 1;">Start Learning</button>
         </div>
     </div>
+</div>
+
+<div class="container">
+    <header class="header">
+        <h1 class="logo">Deutsche Lernwerkstatt</h1>
+        <p class="subtitle">Learn German through real news articles</p>
+    </header>
+
+    <div class="generate-section">
+        <button id="generateBtn" class="btn">Generate New Lesson</button>
+        <span class="api-key-status">
+            <span class="status-dot" id="statusDot"></span>
+            <span id="statusText">API key not set</span>
+        </span>
+        <button id="changeApiKey" class="btn-outline btn-secondary" style="float: right;">Change API Key</button>
+    </div>
+
+    <div id="loadingState" class="loading">
+        <div class="spinner"></div>
+        <p class="loading-text">Generating your lesson...</p>
+    </div>
+
+    <div id="emptyState" class="empty-state">
+        <div class="empty-state-icon">📚</div>
+        <h2 class="empty-state-title">No lesson loaded</h2>
+        <p class="empty-state-text">Click "Generate New Lesson" to get started</p>
+    </div>
+
+    <div id="appContent" style="display: none;">
+        <div class="stats">
+            <div class="stat">
+                <span class="stat-value" id="sentenceCount">0</span>
+                <span class="stat-label">Sentences</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="quizCount">0</span>
+                <span class="stat-label">Questions</span>
+            </div>
+            <div class="stat">
+                <span class="stat-value" id="scoreCount">0/0</span>
+                <span class="stat-label">Score</span>
+            </div>
+        </div>
+
+        <div class="controls">
+            <button id="toggleTranslations" class="btn-secondary">Hide Translations</button>
+            <button id="toggleTooltips" class="btn-secondary">Enable Word Tooltips</button>
+        </div>
+
+        <div class="article-header">
+            <h1 class="article-title" id="articleTitle"></h1>
+            <p class="article-summary" id="articleSummary"></p>
+            <div class="article-meta">
+                <span id="articleDate"></span>
+                <span>•</span>
+                <a id="articleSource" href="#" target="_blank" style="color: var(--accent);">View Source</a>
+            </div>
+        </div>
+
+        <div id="articleContent"></div>
+
+        <div id="vocabSection" class="vocab-section" style="display: none;">
+            <h2 class="section-title">Key Vocabulary</h2>
+            <div class="vocab-grid" id="vocabGrid"></div>
+        </div>
+
+        <div class="quiz-section">
+            <h2 class="section-title">Reading Comprehension</h2>
+            <div class="quiz-score" id="quizScore">
+                <div class="score-value" id="scoreDisplay">0/0</div>
+                <div class="score-message" id="scoreMessage">Complete the quiz to see your score!</div>
+            </div>
+            <div id="quizContent"></div>
+        </div>
+    </div>
+</div>
 
 <script>
 let lessonData = null;
@@ -749,130 +757,230 @@ let translationsVisible = true;
 let tooltipsEnabled = false;
 let quizAnswered = 0;
 let quizCorrect = 0;
+let apiKey = null;
 
-// Load lesson data
-async function loadLessonData() {
-    try {
-        const response = await fetch('lesson_data.json');
-        if (!response.ok) {
-            throw new Error(`HTTP error! status: ${response.status}`);
-        }
-        lessonData = await response.json();
-        
-        document.getElementById('loadingState').style.display = 'none';
-        document.getElementById('app').style.display = 'block';
-        
-        renderArticle(lessonData);
-        renderVocabulary(lessonData);
-        renderQuiz(lessonData);
-        updateStats();
-        
-    } catch (error) {
-        console.error("Could not load the lesson data:", error);
-        document.getElementById('loadingState').innerHTML = `
-            <div class="spinner"></div>
-            <h2 style="color: #dc3545;">Error loading lesson data</h2>
-            <p>Make sure lesson_data.json exists and your server is running.</p>
-        `;
+// Check for saved API key on load
+window.addEventListener('DOMContentLoaded', () => {
+    const savedKey = localStorage.getItem('groq_api_key');
+    if (savedKey) {
+        apiKey = savedKey;
+        updateApiKeyStatus(true);
+        document.getElementById('apiKeyModal').classList.remove('active');
     }
-}
+});
 
-// Render article
-function renderArticle(data) {
-    document.getElementById('articleTitle').textContent = data.title || "German Lesson";
-    document.getElementById('articleSummary').textContent = data.summary || "";
+// Save API key
+document.getElementById('saveApiKey').addEventListener('click', () => {
+    const key = document.getElementById('apiKeyInput').value.trim();
+    const remember = document.getElementById('rememberKey').checked;
     
-    const contentDiv = document.getElementById('articleContent');
-    contentDiv.innerHTML = '';
-
-    data.content.forEach((sentenceData, index) => {
-        const blockDiv = document.createElement('div');
-        blockDiv.className = 'translation-block';
-        blockDiv.style.setProperty('--index', index);
-
-        const rawWords = sentenceData.german_sentence.split(' ');
-        let germanHTML = '<div class="paragraph-source">';
-        germanHTML += `<span class="sentence-number">${sentenceData.sentence_number}</span>`;
-        germanHTML += '<div class="sentence-text">';
-
-        rawWords.forEach(word => {
-            const cleanWord = word.replace(/[.,!?;:]/g, '');
-            const meaning = sentenceData.word_meanings?.[cleanWord];
-            
-            if (meaning && tooltipsEnabled) {
-                germanHTML += `<span class="hover-word" data-translation="${meaning}">${word}</span> `;
-            } else {
-                germanHTML += `${word} `;
-            }
-        });
-        
-        germanHTML += '</div></div>';
-
-        const englishHTML = `<div class="paragraph-translation ${translationsVisible ? '' : 'translation-hidden'}">${sentenceData.english_translation}</div>`;
-        
-        let grammarHTML = '';
-        if (sentenceData.grammar_notes) {
-            grammarHTML = `<div class="grammar-note">${sentenceData.grammar_notes}</div>`;
-        }
-
-        blockDiv.innerHTML = germanHTML + englishHTML + grammarHTML;
-        contentDiv.appendChild(blockDiv);
-    });
-
-    updateProgress();
-}
-
-// Render vocabulary
-function renderVocabulary(data) {
-    if (!data.vocabulary_highlights || data.vocabulary_highlights.length === 0) {
+    if (!key) {
+        alert('Please enter your API key');
         return;
     }
+    
+    apiKey = key;
+    
+    if (remember) {
+        localStorage.setItem('groq_api_key', key);
+    }
+    
+    updateApiKeyStatus(true);
+    document.getElementById('apiKeyModal').classList.remove('active');
+});
 
+// Change API key
+document.getElementById('changeApiKey').addEventListener('click', () => {
+    document.getElementById('apiKeyInput').value = apiKey || '';
+    document.getElementById('apiKeyModal').classList.add('active');
+});
+
+// Update API key status indicator
+function updateApiKeyStatus(hasKey) {
+    const dot = document.getElementById('statusDot');
+    const text = document.getElementById('statusText');
+    
+    if (hasKey) {
+        dot.classList.add('active');
+        text.textContent = 'API key set';
+    } else {
+        dot.classList.remove('active');
+        text.textContent = 'API key not set';
+    }
+}
+
+// Generate new lesson
+document.getElementById('generateBtn').addEventListener('click', async function() {
+    if (!apiKey) {
+        document.getElementById('apiKeyModal').classList.add('active');
+        return;
+    }
+    
+    const btn = this;
+    const loading = document.getElementById('loadingState');
+    const empty = document.getElementById('emptyState');
+    const content = document.getElementById('appContent');
+    
+    btn.disabled = true;
+    loading.classList.add('active');
+    empty.style.display = 'none';
+    content.style.display = 'none';
+    
+    try {
+        const response = await fetch('/api', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                api_key: apiKey
+            })
+        });
+        
+        const result = await response.json();
+        
+        if (result.success) {
+            lessonData = result.data;
+            renderLesson();
+            content.style.display = 'block';
+        } else {
+            if (result.error.includes('API') || result.error.includes('key')) {
+                alert('Invalid API key. Please check your Groq API key and try again.');
+                document.getElementById('apiKeyModal').classList.add('active');
+            } else {
+                alert('Error generating lesson: ' + result.error);
+            }
+            empty.style.display = 'block';
+        }
+    } catch (error) {
+        alert('Error: ' + error.message);
+        empty.style.display = 'block';
+    } finally {
+        loading.classList.remove('active');
+        btn.disabled = false;
+    }
+});
+
+function renderLesson() {
+    quizAnswered = 0;
+    quizCorrect = 0;
+    translationsVisible = true;
+    tooltipsEnabled = false;
+    
+    document.getElementById('articleTitle').textContent = lessonData.title;
+    document.getElementById('articleSummary').textContent = lessonData.summary;
+    document.getElementById('articleSource').href = lessonData.source_url;
+    
+    const date = new Date(lessonData.generated_at);
+    document.getElementById('articleDate').textContent = date.toLocaleDateString();
+    
+    document.getElementById('sentenceCount').textContent = lessonData.content.length;
+    document.getElementById('quizCount').textContent = lessonData.quiz.length;
+    updateScore();
+    
+    renderArticle();
+    renderVocabulary();
+    renderQuiz();
+}
+
+function renderArticle() {
+    const container = document.getElementById('articleContent');
+    container.innerHTML = '';
+    
+    lessonData.content.forEach((item, index) => {
+        const block = document.createElement('div');
+        block.className = 'translation-block';
+        
+        const header = document.createElement('div');
+        header.className = 'sentence-header';
+        
+        const number = document.createElement('div');
+        number.className = 'sentence-number';
+        number.textContent = item.sentence_number;
+        
+        const german = document.createElement('div');
+        german.className = 'german-text';
+        
+        const words = item.german_sentence.split(' ');
+        german.innerHTML = words.map(word => {
+            const cleanWord = word.replace(/[.,!?;:]/g, '');
+            const meaning = item.word_meanings?.[cleanWord];
+            
+            if (meaning && tooltipsEnabled) {
+                return `<span class="hover-word" data-translation="${meaning}">${word}</span>`;
+            }
+            return word;
+        }).join(' ');
+        
+        header.appendChild(number);
+        header.appendChild(german);
+        block.appendChild(header);
+        
+        const english = document.createElement('div');
+        english.className = 'english-text' + (translationsVisible ? '' : ' hidden');
+        english.textContent = item.english_translation;
+        block.appendChild(english);
+        
+        if (item.grammar_notes) {
+            const grammar = document.createElement('div');
+            grammar.className = 'grammar-note';
+            grammar.textContent = item.grammar_notes;
+            block.appendChild(grammar);
+        }
+        
+        container.appendChild(block);
+    });
+}
+
+function renderVocabulary() {
+    if (!lessonData.vocabulary_highlights || lessonData.vocabulary_highlights.length === 0) {
+        return;
+    }
+    
     document.getElementById('vocabSection').style.display = 'block';
-    const vocabGrid = document.getElementById('vocabGrid');
-    vocabGrid.innerHTML = '';
-
-    data.vocabulary_highlights.forEach(item => {
+    const grid = document.getElementById('vocabGrid');
+    grid.innerHTML = '';
+    
+    lessonData.vocabulary_highlights.forEach(item => {
         const card = document.createElement('div');
         card.className = 'vocab-card';
         card.innerHTML = `
             <div class="vocab-word">${item.word}</div>
             <div class="vocab-translation">${item.translation}</div>
-            <div class="vocab-example">"${item.usage_example}"</div>
+            <div class="vocab-example">${item.usage_example}</div>
         `;
-        vocabGrid.appendChild(card);
+        grid.appendChild(card);
     });
 }
 
-// Render quiz
-function renderQuiz(data) {
-    const quizDiv = document.getElementById('quizContent');
-    quizDiv.innerHTML = '';
-
-    data.quiz.forEach((q, index) => {
-        const qContainer = document.createElement('div');
-        qContainer.className = 'quiz-question';
+function renderQuiz() {
+    const container = document.getElementById('quizContent');
+    container.innerHTML = '';
+    
+    lessonData.quiz.forEach((q, index) => {
+        const question = document.createElement('div');
+        question.className = 'quiz-question';
         
-        const qHeader = document.createElement('div');
-        qHeader.className = 'question-header';
-        qHeader.innerHTML = `
+        const header = document.createElement('div');
+        header.className = 'question-header';
+        header.innerHTML = `
             <div class="question-number">${index + 1}</div>
-            <div class="question-title">${q.question}</div>
+            <div class="question-text">${q.question}</div>
         `;
-        qContainer.appendChild(qHeader);
-
+        question.appendChild(header);
+        
         q.options.forEach(option => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
             btn.textContent = option;
             
             btn.onclick = function() {
-                const siblings = qContainer.querySelectorAll('.option-btn');
-                siblings.forEach(sib => {
-                    sib.classList.remove('correct', 'wrong');
-                    sib.disabled = true;
+                const buttons = question.querySelectorAll('.option-btn');
+                buttons.forEach(b => {
+                    b.disabled = true;
+                    b.classList.remove('correct', 'wrong');
                 });
-
+                
                 const isCorrect = option === q.correct_answer;
                 
                 if (isCorrect) {
@@ -880,94 +988,68 @@ function renderQuiz(data) {
                     quizCorrect++;
                 } else {
                     btn.classList.add('wrong');
-                    siblings.forEach(sib => {
-                        if (sib.textContent === q.correct_answer) {
-                            sib.classList.add('correct');
+                    buttons.forEach(b => {
+                        if (b.textContent === q.correct_answer) {
+                            b.classList.add('correct');
                         }
                     });
                 }
-
+                
                 quizAnswered++;
-                updateQuizScore();
+                updateScore();
                 
                 if (q.explanation) {
-                    const explanation = qContainer.querySelector('.explanation');
-                    explanation.classList.add('show');
+                    const exp = question.querySelector('.explanation');
+                    exp.classList.add('show');
                 }
             };
-            qContainer.appendChild(btn);
+            
+            question.appendChild(btn);
         });
-
+        
         if (q.explanation) {
-            const explanationDiv = document.createElement('div');
-            explanationDiv.className = 'explanation';
-            explanationDiv.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
-            qContainer.appendChild(explanationDiv);
+            const exp = document.createElement('div');
+            exp.className = 'explanation';
+            exp.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
+            question.appendChild(exp);
         }
-
-        quizDiv.appendChild(qContainer);
+        
+        container.appendChild(question);
     });
 }
 
-// Update stats
-function updateStats() {
-    document.getElementById('sentenceCount').textContent = lessonData.content.length;
-    document.getElementById('quizCount').textContent = lessonData.quiz.length;
-}
-
-// Update progress
-function updateProgress() {
-    const progress = Math.min(100, (quizAnswered / lessonData.quiz.length) * 100);
-    document.getElementById('progressFill').style.width = progress + '%';
-}
-
-// Update quiz score
-function updateQuizScore() {
-    const scoreDiv = document.getElementById('quizScore');
-    const scoreDisplay = document.getElementById('scoreDisplay');
-    const scoreMessage = document.getElementById('scoreMessage');
-    
-    scoreDiv.classList.add('show');
-    scoreDisplay.textContent = `${quizCorrect}/${lessonData.quiz.length}`;
-    
-    const percentage = (quizCorrect / lessonData.quiz.length) * 100;
+function updateScore() {
+    const scoreDisplay = `${quizCorrect}/${lessonData.quiz.length}`;
+    document.getElementById('scoreCount').textContent = scoreDisplay;
+    document.getElementById('scoreDisplay').textContent = scoreDisplay;
     
     if (quizAnswered === lessonData.quiz.length) {
-        if (percentage >= 90) {
-            scoreMessage.textContent = "Ausgezeichnet! Excellent work! 🎉";
-        } else if (percentage >= 70) {
-            scoreMessage.textContent = "Sehr gut! Very good! 👏";
-        } else if (percentage >= 50) {
-            scoreMessage.textContent = "Gut gemacht! Good job! 👍";
-        } else {
-            scoreMessage.textContent = "Keep practicing! You'll get there! 💪";
-        }
-    } else {
-        scoreMessage.textContent = `${quizAnswered} of ${lessonData.quiz.length} answered`;
+        const percentage = (quizCorrect / lessonData.quiz.length) * 100;
+        let message = '';
+        
+        if (percentage >= 90) message = "Ausgezeichnet! Excellent! 🎉";
+        else if (percentage >= 70) message = "Sehr gut! Very good! 👏";
+        else if (percentage >= 50) message = "Gut gemacht! Good job! 👍";
+        else message = "Keep practicing! 💪";
+        
+        document.getElementById('scoreMessage').textContent = message;
+        document.getElementById('quizScore').classList.add('show');
     }
-    
-    updateProgress();
 }
 
-// Toggle translations
 document.getElementById('toggleTranslations').addEventListener('click', function() {
     translationsVisible = !translationsVisible;
-    const translations = document.querySelectorAll('.paragraph-translation');
-    translations.forEach(t => {
-        t.classList.toggle('translation-hidden', !translationsVisible);
+    document.querySelectorAll('.english-text').forEach(el => {
+        el.classList.toggle('hidden', !translationsVisible);
     });
-    this.classList.toggle('active', translationsVisible);
+    this.textContent = translationsVisible ? 'Hide Translations' : 'Show Translations';
 });
 
-// Toggle tooltips
 document.getElementById('toggleTooltips').addEventListener('click', function() {
     tooltipsEnabled = !tooltipsEnabled;
-    this.classList.toggle('active', tooltipsEnabled);
-    renderArticle(lessonData);
+    this.textContent = tooltipsEnabled ? 'Disable Word Tooltips' : 'Enable Word Tooltips';
+    renderArticle();
 });
-
-// Start loading
-loadLessonData();
 </script>
 
 </body>
