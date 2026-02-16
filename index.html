@@ -1,0 +1,974 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Deutsche Lernwerkstatt | German Learning Platform</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Literata:ital,wght@0,400;0,700;1,400&family=DM+Sans:wght@400;500;700&display=swap" rel="stylesheet">
+<style>
+    :root {
+        --cream: #faf8f3;
+        --ink: #1a1a1a;
+        --ink-light: #4a4a4a;
+        --accent: #d4663b;
+        --accent-light: #e89277;
+        --forest: #2d5016;
+        --sage: #8ba888;
+        --paper: #ffffff;
+        --shadow: rgba(0, 0, 0, 0.08);
+        --glow: rgba(212, 102, 59, 0.15);
+    }
+
+    * {
+        margin: 0;
+        padding: 0;
+        box-sizing: border-box;
+    }
+
+    body {
+        font-family: 'DM Sans', sans-serif;
+        background: var(--cream);
+        color: var(--ink);
+        line-height: 1.7;
+        overflow-x: hidden;
+    }
+
+    /* Header */
+    .header {
+        background: var(--paper);
+        border-bottom: 3px solid var(--accent);
+        padding: 2rem 0;
+        box-shadow: 0 4px 20px var(--shadow);
+        position: sticky;
+        top: 0;
+        z-index: 100;
+    }
+
+    .header-content {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 0 2rem;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+
+    .logo {
+        font-family: 'Literata', serif;
+        font-size: 1.8rem;
+        font-weight: 700;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 0.5rem;
+    }
+
+    .logo-icon {
+        width: 36px;
+        height: 36px;
+        background: linear-gradient(135deg, var(--accent) 0%, var(--accent-light) 100%);
+        border-radius: 8px;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        color: white;
+        font-weight: 700;
+    }
+
+    .progress-bar-container {
+        flex: 1;
+        max-width: 300px;
+        margin: 0 2rem;
+    }
+
+    .progress-label {
+        font-size: 0.75rem;
+        color: var(--ink-light);
+        margin-bottom: 0.25rem;
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    .progress-bar {
+        height: 8px;
+        background: #e0e0e0;
+        border-radius: 10px;
+        overflow: hidden;
+        position: relative;
+    }
+
+    .progress-fill {
+        height: 100%;
+        background: linear-gradient(90deg, var(--forest) 0%, var(--sage) 100%);
+        border-radius: 10px;
+        transition: width 0.5s cubic-bezier(0.4, 0, 0.2, 1);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .progress-fill::after {
+        content: '';
+        position: absolute;
+        top: 0;
+        left: 0;
+        right: 0;
+        bottom: 0;
+        background: linear-gradient(90deg, transparent, rgba(255,255,255,0.3), transparent);
+        animation: shimmer 2s infinite;
+    }
+
+    @keyframes shimmer {
+        0% { transform: translateX(-100%); }
+        100% { transform: translateX(100%); }
+    }
+
+    .stats {
+        display: flex;
+        gap: 1.5rem;
+        font-size: 0.9rem;
+    }
+
+    .stat-item {
+        text-align: center;
+    }
+
+    .stat-value {
+        font-size: 1.5rem;
+        font-weight: 700;
+        color: var(--accent);
+        display: block;
+    }
+
+    .stat-label {
+        font-size: 0.7rem;
+        color: var(--ink-light);
+        text-transform: uppercase;
+        letter-spacing: 0.5px;
+    }
+
+    /* Main Container */
+    .container {
+        max-width: 1200px;
+        margin: 0 auto;
+        padding: 3rem 2rem;
+    }
+
+    /* Article Header */
+    .article-header {
+        background: var(--paper);
+        padding: 3rem;
+        border-radius: 16px;
+        margin-bottom: 3rem;
+        box-shadow: 0 8px 30px var(--shadow);
+        border-left: 6px solid var(--accent);
+        animation: slideUp 0.6s ease-out;
+    }
+
+    @keyframes slideUp {
+        from {
+            opacity: 0;
+            transform: translateY(30px);
+        }
+        to {
+            opacity: 1;
+            transform: translateY(0);
+        }
+    }
+
+    .article-title {
+        font-family: 'Literata', serif;
+        font-size: 2.5rem;
+        line-height: 1.3;
+        margin-bottom: 1rem;
+        color: var(--ink);
+    }
+
+    .article-summary {
+        font-size: 1.1rem;
+        color: var(--ink-light);
+        line-height: 1.8;
+        padding: 1.5rem;
+        background: var(--cream);
+        border-radius: 8px;
+        border-left: 3px solid var(--sage);
+    }
+
+    /* View Toggles */
+    .view-controls {
+        display: flex;
+        gap: 1rem;
+        margin-bottom: 2rem;
+        flex-wrap: wrap;
+    }
+
+    .toggle-btn {
+        padding: 0.75rem 1.5rem;
+        background: var(--paper);
+        border: 2px solid var(--accent);
+        border-radius: 50px;
+        color: var(--accent);
+        font-weight: 600;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-size: 0.9rem;
+        font-family: 'DM Sans', sans-serif;
+    }
+
+    .toggle-btn:hover {
+        background: var(--accent);
+        color: white;
+        transform: translateY(-2px);
+        box-shadow: 0 4px 12px var(--glow);
+    }
+
+    .toggle-btn.active {
+        background: var(--accent);
+        color: white;
+    }
+
+    /* Translation Blocks */
+    .translation-block {
+        background: var(--paper);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px var(--shadow);
+        transition: all 0.3s ease;
+        opacity: 0;
+        animation: fadeIn 0.5s ease-out forwards;
+        animation-delay: calc(var(--index) * 0.05s);
+        border-left: 4px solid transparent;
+    }
+
+    @keyframes fadeIn {
+        to {
+            opacity: 1;
+        }
+    }
+
+    .translation-block:hover {
+        box-shadow: 0 8px 25px var(--shadow);
+        border-left-color: var(--accent);
+    }
+
+    .sentence-number {
+        display: inline-block;
+        width: 32px;
+        height: 32px;
+        background: var(--accent);
+        color: white;
+        border-radius: 50%;
+        text-align: center;
+        line-height: 32px;
+        font-weight: 700;
+        font-size: 0.85rem;
+        margin-right: 1rem;
+        flex-shrink: 0;
+    }
+
+    .paragraph-source {
+        font-size: 1.25rem;
+        line-height: 1.8;
+        margin-bottom: 1rem;
+        color: var(--ink);
+        display: flex;
+        align-items: flex-start;
+    }
+
+    .sentence-text {
+        flex: 1;
+    }
+
+    .paragraph-translation {
+        background: linear-gradient(135deg, #e8f4f8 0%, #f0f7ff 100%);
+        color: var(--forest);
+        font-size: 1.05rem;
+        padding: 1.25rem;
+        border-radius: 8px;
+        font-style: italic;
+        border-left: 3px solid var(--sage);
+        margin-bottom: 1rem;
+        transition: all 0.3s ease;
+    }
+
+    .translation-hidden {
+        display: none;
+    }
+
+    .grammar-note {
+        background: #fff8f0;
+        padding: 0.75rem 1rem;
+        border-radius: 6px;
+        font-size: 0.9rem;
+        color: var(--ink-light);
+        border-left: 3px solid var(--accent-light);
+        margin-top: 0.5rem;
+        display: flex;
+        align-items: flex-start;
+        gap: 0.5rem;
+    }
+
+    .grammar-note::before {
+        content: "💡";
+        font-size: 1rem;
+    }
+
+    /* Hover Word Tooltips */
+    .hover-word {
+        position: relative;
+        cursor: help;
+        border-bottom: 2px dotted var(--accent);
+        display: inline-block;
+        transition: all 0.2s ease;
+        padding: 0 2px;
+    }
+
+    .hover-word:hover {
+        background: var(--glow);
+        border-bottom-style: solid;
+    }
+
+    .hover-word::after {
+        content: attr(data-translation);
+        position: absolute;
+        bottom: 125%;
+        left: 50%;
+        transform: translateX(-50%) scale(0.9);
+        background: var(--ink);
+        color: white;
+        padding: 0.5rem 0.75rem;
+        border-radius: 6px;
+        font-size: 0.85rem;
+        font-weight: 600;
+        white-space: nowrap;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        z-index: 10;
+        pointer-events: none;
+        box-shadow: 0 4px 12px rgba(0,0,0,0.2);
+    }
+
+    .hover-word::before {
+        content: '';
+        position: absolute;
+        bottom: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        border-width: 6px;
+        border-style: solid;
+        border-color: var(--ink) transparent transparent transparent;
+        opacity: 0;
+        visibility: hidden;
+        transition: all 0.2s ease;
+        z-index: 10;
+    }
+
+    .hover-word:hover::after,
+    .hover-word:hover::before {
+        opacity: 1;
+        visibility: visible;
+        transform: translateX(-50%) scale(1);
+    }
+
+    /* Vocabulary Section */
+    .vocab-section {
+        background: var(--paper);
+        padding: 2.5rem;
+        border-radius: 12px;
+        margin-bottom: 3rem;
+        box-shadow: 0 4px 15px var(--shadow);
+    }
+
+    .section-title {
+        font-family: 'Literata', serif;
+        font-size: 2rem;
+        margin-bottom: 1.5rem;
+        color: var(--accent);
+        display: flex;
+        align-items: center;
+        gap: 0.75rem;
+    }
+
+    .section-title::before {
+        content: '';
+        width: 4px;
+        height: 2rem;
+        background: var(--accent);
+        border-radius: 2px;
+    }
+
+    .vocab-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+        gap: 1.25rem;
+    }
+
+    .vocab-card {
+        background: var(--cream);
+        padding: 1.25rem;
+        border-radius: 10px;
+        border: 2px solid transparent;
+        transition: all 0.3s ease;
+        cursor: pointer;
+    }
+
+    .vocab-card:hover {
+        border-color: var(--accent);
+        transform: translateY(-3px);
+        box-shadow: 0 6px 20px var(--shadow);
+    }
+
+    .vocab-word {
+        font-size: 1.3rem;
+        font-weight: 700;
+        color: var(--ink);
+        margin-bottom: 0.5rem;
+    }
+
+    .vocab-translation {
+        color: var(--accent);
+        font-weight: 600;
+        margin-bottom: 0.75rem;
+        font-size: 1.05rem;
+    }
+
+    .vocab-example {
+        font-size: 0.9rem;
+        color: var(--ink-light);
+        font-style: italic;
+        padding-top: 0.75rem;
+        border-top: 1px solid #e0e0e0;
+    }
+
+    /* Quiz Section */
+    .quiz-section {
+        background: linear-gradient(135deg, #f5f7fa 0%, #c3cfe2 100%);
+        padding: 3rem;
+        border-radius: 16px;
+        box-shadow: 0 8px 30px var(--shadow);
+    }
+
+    .quiz-question {
+        background: var(--paper);
+        padding: 2rem;
+        border-radius: 12px;
+        margin-bottom: 2rem;
+        box-shadow: 0 4px 15px rgba(0,0,0,0.08);
+        transition: all 0.3s ease;
+    }
+
+    .quiz-question:hover {
+        box-shadow: 0 8px 25px rgba(0,0,0,0.12);
+    }
+
+    .question-header {
+        display: flex;
+        align-items: center;
+        gap: 1rem;
+        margin-bottom: 1.5rem;
+    }
+
+    .question-number {
+        width: 40px;
+        height: 40px;
+        background: linear-gradient(135deg, var(--forest) 0%, var(--sage) 100%);
+        color: white;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        font-weight: 700;
+        font-size: 1.1rem;
+        flex-shrink: 0;
+    }
+
+    .question-title {
+        font-size: 1.2rem;
+        font-weight: 600;
+        color: var(--ink);
+        flex: 1;
+    }
+
+    .option-btn {
+        width: 100%;
+        text-align: left;
+        padding: 1rem 1.25rem;
+        margin-bottom: 0.75rem;
+        background: var(--cream);
+        border: 2px solid #ddd;
+        border-radius: 10px;
+        font-size: 1rem;
+        cursor: pointer;
+        transition: all 0.3s ease;
+        font-family: 'DM Sans', sans-serif;
+        color: var(--ink);
+        position: relative;
+        overflow: hidden;
+    }
+
+    .option-btn::before {
+        content: '';
+        position: absolute;
+        left: 0;
+        top: 0;
+        height: 100%;
+        width: 4px;
+        background: transparent;
+        transition: all 0.3s ease;
+    }
+
+    .option-btn:hover:not(:disabled) {
+        background: white;
+        border-color: var(--accent);
+        transform: translateX(4px);
+    }
+
+    .option-btn.correct {
+        background: linear-gradient(135deg, #d4edda 0%, #c3e6cb 100%);
+        border-color: var(--forest);
+        color: var(--forest);
+        font-weight: 600;
+    }
+
+    .option-btn.correct::before {
+        background: var(--forest);
+    }
+
+    .option-btn.correct::after {
+        content: '✓';
+        position: absolute;
+        right: 1.25rem;
+        font-size: 1.5rem;
+        color: var(--forest);
+    }
+
+    .option-btn.wrong {
+        background: linear-gradient(135deg, #f8d7da 0%, #f5c6cb 100%);
+        border-color: #dc3545;
+        color: #721c24;
+    }
+
+    .option-btn.wrong::before {
+        background: #dc3545;
+    }
+
+    .option-btn.wrong::after {
+        content: '✗';
+        position: absolute;
+        right: 1.25rem;
+        font-size: 1.5rem;
+        color: #dc3545;
+    }
+
+    .option-btn:disabled {
+        cursor: not-allowed;
+    }
+
+    .explanation {
+        margin-top: 1rem;
+        padding: 1rem;
+        background: #fff8e6;
+        border-left: 4px solid #ffc107;
+        border-radius: 6px;
+        font-size: 0.95rem;
+        color: var(--ink-light);
+        display: none;
+    }
+
+    .explanation.show {
+        display: block;
+        animation: slideDown 0.3s ease-out;
+    }
+
+    @keyframes slideDown {
+        from {
+            opacity: 0;
+            max-height: 0;
+        }
+        to {
+            opacity: 1;
+            max-height: 200px;
+        }
+    }
+
+    .quiz-score {
+        background: var(--paper);
+        padding: 2rem;
+        border-radius: 12px;
+        text-align: center;
+        margin-bottom: 2rem;
+        display: none;
+    }
+
+    .quiz-score.show {
+        display: block;
+        animation: slideUp 0.5s ease-out;
+    }
+
+    .score-display {
+        font-size: 3rem;
+        font-weight: 700;
+        color: var(--accent);
+        font-family: 'Literata', serif;
+    }
+
+    .score-message {
+        font-size: 1.2rem;
+        color: var(--ink-light);
+        margin-top: 0.5rem;
+    }
+
+    /* Loading State */
+    .loading {
+        text-align: center;
+        padding: 4rem 2rem;
+    }
+
+    .spinner {
+        width: 50px;
+        height: 50px;
+        border: 4px solid var(--cream);
+        border-top-color: var(--accent);
+        border-radius: 50%;
+        animation: spin 1s linear infinite;
+        margin: 0 auto 1rem;
+    }
+
+    @keyframes spin {
+        to { transform: rotate(360deg); }
+    }
+
+    /* Responsive */
+    @media (max-width: 768px) {
+        .header-content {
+            flex-direction: column;
+            gap: 1rem;
+        }
+
+        .progress-bar-container {
+            width: 100%;
+            max-width: 100%;
+            margin: 1rem 0;
+        }
+
+        .stats {
+            width: 100%;
+            justify-content: space-around;
+        }
+
+        .article-title {
+            font-size: 1.8rem;
+        }
+
+        .vocab-grid {
+            grid-template-columns: 1fr;
+        }
+
+        .view-controls {
+            flex-direction: column;
+        }
+
+        .toggle-btn {
+            width: 100%;
+        }
+    }
+</style>
+</head>
+<body>
+
+    <header class="header">
+        <div class="header-content">
+            <div class="logo">
+                <div class="logo-icon">DE</div>
+                Deutsche Lernwerkstatt
+            </div>
+            <div class="progress-bar-container">
+                <div class="progress-label">Lesson Progress</div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill" style="width: 0%"></div>
+                </div>
+            </div>
+            <div class="stats">
+                <div class="stat-item">
+                    <span class="stat-value" id="sentenceCount">0</span>
+                    <span class="stat-label">Sentences</span>
+                </div>
+                <div class="stat-item">
+                    <span class="stat-value" id="quizCount">0</span>
+                    <span class="stat-label">Questions</span>
+                </div>
+            </div>
+        </div>
+    </header>
+
+    <div class="container">
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <h2>Lade Lektion... Loading your lesson...</h2>
+        </div>
+
+        <div id="app" style="display: none;">
+            <div class="article-header">
+                <h1 class="article-title" id="articleTitle">Loading Article...</h1>
+                <div class="article-summary" id="articleSummary"></div>
+            </div>
+
+            <div class="view-controls">
+                <button class="toggle-btn active" id="toggleTranslations">
+                    Show/Hide Translations
+                </button>
+                <button class="toggle-btn" id="toggleTooltips">
+                    Enable Word Tooltips
+                </button>
+            </div>
+
+            <div id="articleContent"></div>
+
+            <div class="vocab-section" id="vocabSection" style="display: none;">
+                <h2 class="section-title">📚 Key Vocabulary</h2>
+                <div class="vocab-grid" id="vocabGrid"></div>
+            </div>
+
+            <div class="quiz-section">
+                <h2 class="section-title">🎯 Test Your Understanding</h2>
+                <div class="quiz-score" id="quizScore">
+                    <div class="score-display" id="scoreDisplay">0/0</div>
+                    <div class="score-message" id="scoreMessage">Complete the quiz to see your score!</div>
+                </div>
+                <div id="quizContent"></div>
+            </div>
+        </div>
+    </div>
+
+<script>
+let lessonData = null;
+let translationsVisible = true;
+let tooltipsEnabled = false;
+let quizAnswered = 0;
+let quizCorrect = 0;
+
+// Load lesson data
+async function loadLessonData() {
+    try {
+        const response = await fetch('lesson_data.json');
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
+        }
+        lessonData = await response.json();
+        
+        document.getElementById('loadingState').style.display = 'none';
+        document.getElementById('app').style.display = 'block';
+        
+        renderArticle(lessonData);
+        renderVocabulary(lessonData);
+        renderQuiz(lessonData);
+        updateStats();
+        
+    } catch (error) {
+        console.error("Could not load the lesson data:", error);
+        document.getElementById('loadingState').innerHTML = `
+            <div class="spinner"></div>
+            <h2 style="color: #dc3545;">Error loading lesson data</h2>
+            <p>Make sure lesson_data.json exists and your server is running.</p>
+        `;
+    }
+}
+
+// Render article
+function renderArticle(data) {
+    document.getElementById('articleTitle').textContent = data.title || "German Lesson";
+    document.getElementById('articleSummary').textContent = data.summary || "";
+    
+    const contentDiv = document.getElementById('articleContent');
+    contentDiv.innerHTML = '';
+
+    data.content.forEach((sentenceData, index) => {
+        const blockDiv = document.createElement('div');
+        blockDiv.className = 'translation-block';
+        blockDiv.style.setProperty('--index', index);
+
+        const rawWords = sentenceData.german_sentence.split(' ');
+        let germanHTML = '<div class="paragraph-source">';
+        germanHTML += `<span class="sentence-number">${sentenceData.sentence_number}</span>`;
+        germanHTML += '<div class="sentence-text">';
+
+        rawWords.forEach(word => {
+            const cleanWord = word.replace(/[.,!?;:]/g, '');
+            const meaning = sentenceData.word_meanings?.[cleanWord];
+            
+            if (meaning && tooltipsEnabled) {
+                germanHTML += `<span class="hover-word" data-translation="${meaning}">${word}</span> `;
+            } else {
+                germanHTML += `${word} `;
+            }
+        });
+        
+        germanHTML += '</div></div>';
+
+        const englishHTML = `<div class="paragraph-translation ${translationsVisible ? '' : 'translation-hidden'}">${sentenceData.english_translation}</div>`;
+        
+        let grammarHTML = '';
+        if (sentenceData.grammar_notes) {
+            grammarHTML = `<div class="grammar-note">${sentenceData.grammar_notes}</div>`;
+        }
+
+        blockDiv.innerHTML = germanHTML + englishHTML + grammarHTML;
+        contentDiv.appendChild(blockDiv);
+    });
+
+    updateProgress();
+}
+
+// Render vocabulary
+function renderVocabulary(data) {
+    if (!data.vocabulary_highlights || data.vocabulary_highlights.length === 0) {
+        return;
+    }
+
+    document.getElementById('vocabSection').style.display = 'block';
+    const vocabGrid = document.getElementById('vocabGrid');
+    vocabGrid.innerHTML = '';
+
+    data.vocabulary_highlights.forEach(item => {
+        const card = document.createElement('div');
+        card.className = 'vocab-card';
+        card.innerHTML = `
+            <div class="vocab-word">${item.word}</div>
+            <div class="vocab-translation">${item.translation}</div>
+            <div class="vocab-example">"${item.usage_example}"</div>
+        `;
+        vocabGrid.appendChild(card);
+    });
+}
+
+// Render quiz
+function renderQuiz(data) {
+    const quizDiv = document.getElementById('quizContent');
+    quizDiv.innerHTML = '';
+
+    data.quiz.forEach((q, index) => {
+        const qContainer = document.createElement('div');
+        qContainer.className = 'quiz-question';
+        
+        const qHeader = document.createElement('div');
+        qHeader.className = 'question-header';
+        qHeader.innerHTML = `
+            <div class="question-number">${index + 1}</div>
+            <div class="question-title">${q.question}</div>
+        `;
+        qContainer.appendChild(qHeader);
+
+        q.options.forEach(option => {
+            const btn = document.createElement('button');
+            btn.className = 'option-btn';
+            btn.textContent = option;
+            
+            btn.onclick = function() {
+                const siblings = qContainer.querySelectorAll('.option-btn');
+                siblings.forEach(sib => {
+                    sib.classList.remove('correct', 'wrong');
+                    sib.disabled = true;
+                });
+
+                const isCorrect = option === q.correct_answer;
+                
+                if (isCorrect) {
+                    btn.classList.add('correct');
+                    quizCorrect++;
+                } else {
+                    btn.classList.add('wrong');
+                    siblings.forEach(sib => {
+                        if (sib.textContent === q.correct_answer) {
+                            sib.classList.add('correct');
+                        }
+                    });
+                }
+
+                quizAnswered++;
+                updateQuizScore();
+                
+                if (q.explanation) {
+                    const explanation = qContainer.querySelector('.explanation');
+                    explanation.classList.add('show');
+                }
+            };
+            qContainer.appendChild(btn);
+        });
+
+        if (q.explanation) {
+            const explanationDiv = document.createElement('div');
+            explanationDiv.className = 'explanation';
+            explanationDiv.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
+            qContainer.appendChild(explanationDiv);
+        }
+
+        quizDiv.appendChild(qContainer);
+    });
+}
+
+// Update stats
+function updateStats() {
+    document.getElementById('sentenceCount').textContent = lessonData.content.length;
+    document.getElementById('quizCount').textContent = lessonData.quiz.length;
+}
+
+// Update progress
+function updateProgress() {
+    const progress = Math.min(100, (quizAnswered / lessonData.quiz.length) * 100);
+    document.getElementById('progressFill').style.width = progress + '%';
+}
+
+// Update quiz score
+function updateQuizScore() {
+    const scoreDiv = document.getElementById('quizScore');
+    const scoreDisplay = document.getElementById('scoreDisplay');
+    const scoreMessage = document.getElementById('scoreMessage');
+    
+    scoreDiv.classList.add('show');
+    scoreDisplay.textContent = `${quizCorrect}/${lessonData.quiz.length}`;
+    
+    const percentage = (quizCorrect / lessonData.quiz.length) * 100;
+    
+    if (quizAnswered === lessonData.quiz.length) {
+        if (percentage >= 90) {
+            scoreMessage.textContent = "Ausgezeichnet! Excellent work! 🎉";
+        } else if (percentage >= 70) {
+            scoreMessage.textContent = "Sehr gut! Very good! 👏";
+        } else if (percentage >= 50) {
+            scoreMessage.textContent = "Gut gemacht! Good job! 👍";
+        } else {
+            scoreMessage.textContent = "Keep practicing! You'll get there! 💪";
+        }
+    } else {
+        scoreMessage.textContent = `${quizAnswered} of ${lessonData.quiz.length} answered`;
+    }
+    
+    updateProgress();
+}
+
+// Toggle translations
+document.getElementById('toggleTranslations').addEventListener('click', function() {
+    translationsVisible = !translationsVisible;
+    const translations = document.querySelectorAll('.paragraph-translation');
+    translations.forEach(t => {
+        t.classList.toggle('translation-hidden', !translationsVisible);
+    });
+    this.classList.toggle('active', translationsVisible);
+});
+
+// Toggle tooltips
+document.getElementById('toggleTooltips').addEventListener('click', function() {
+    tooltipsEnabled = !tooltipsEnabled;
+    this.classList.toggle('active', tooltipsEnabled);
+    renderArticle(lessonData);
+});
+
+// Start loading
+loadLessonData();
+</script>
+
+</body>
+</html>
