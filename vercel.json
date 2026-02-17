@@ -2,6 +2,9 @@
   "functions": {
     "api/index.py": {
       "maxDuration": 60
+    },
+    "api/process-custom.py": {
+      "maxDuration": 60
     }
   }
 }

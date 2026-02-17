@@ -208,6 +208,50 @@ body {
 .btn-icon.playing { color: var(--accent); animation: pulse 1s ease-in-out infinite; }
 
 /* clickable words */
+/* ── SOURCE PICKER ── */
+.source-picker {
+    margin-bottom: 2rem;
+}
+.source-tabs {
+    display: flex;
+    gap: 0;
+    background: var(--surface);
+    border: 1px solid var(--border);
+    border-radius: 8px;
+    padding: 4px;
+    margin-bottom: 1.25rem;
+    width: fit-content;
+}
+.source-tab {
+    padding: 0.5rem 1.1rem;
+    background: none;
+    border: none;
+    border-radius: 6px;
+    color: var(--text-subtle);
+    font-family: inherit;
+    font-size: 0.85rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.15s;
+    white-space: nowrap;
+}
+.source-tab:hover { color: var(--text); }
+.source-tab.active { background: var(--bg); color: var(--text); border: 1px solid var(--border); }
+.source-panel { display: none; }
+.source-panel.active { display: flex; gap: 0.75rem; align-items: flex-start; flex-wrap: wrap; }
+.url-input-wrap { flex: 1; min-width: 220px; }
+.url-input-wrap .input { width: 100%; }
+.pdf-drop {
+    border: 2px dashed var(--border); border-radius: 8px;
+    padding: 2rem 1.5rem; text-align: center; cursor: pointer;
+    transition: all 0.2s; flex: 1; min-width: 220px;
+}
+.pdf-drop:hover, .pdf-drop.drag-over { border-color: var(--accent); background: rgba(59,130,246,0.04); }
+.pdf-drop-icon { font-size: 1.75rem; margin-bottom: 0.4rem; }
+.pdf-drop-text { font-size: 0.85rem; color: var(--text-dim); }
+.pdf-drop-text strong { color: var(--text); }
+.pdf-selected { font-size: 0.82rem; color: var(--success); margin-top: 0.4rem; }
+
 .word-token {
     cursor: pointer;
     border-bottom: 1px dotted var(--border);
@@ -481,15 +525,45 @@ body {
 
     <!-- ══════════ LESSON TAB ══════════ -->
     <div id="tab-lesson" class="tab-panel active">
-        <div style="margin-bottom:2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
-            <button id="generateBtn" class="btn">Generate New Lesson</button>
+        <div class="source-picker">
+            <!-- Source type tabs -->
+            <div class="source-tabs">
+                <button class="source-tab active" data-source="random">🎲 Random Article</button>
+                <button class="source-tab" data-source="url">🔗 Website URL</button>
+                <button class="source-tab" data-source="pdf">📄 Upload PDF</button>
+            </div>
+
+            <!-- Random Article panel -->
+            <div class="source-panel active" id="panel-random">
+                <button id="generateBtn" class="btn">Generate Lesson</button>
+                <span style="font-size:0.82rem; color:var(--text-subtle); align-self:center;">Picks a random German article from Nachrichtenleicht</span>
+            </div>
+
+            <!-- URL panel -->
+            <div class="source-panel" id="panel-url">
+                <div class="url-input-wrap">
+                    <input type="url" id="urlInput" class="input" placeholder="https://www.spiegel.de/..." />
+                </div>
+                <button id="urlBtn" class="btn">Generate from URL</button>
+            </div>
+
+            <!-- PDF panel -->
+            <div class="source-panel" id="panel-pdf">
+                <div class="pdf-drop" id="pdfDrop">
+                    <input type="file" id="pdfFile" accept=".pdf" style="display:none" />
+                    <div class="pdf-drop-icon">📄</div>
+                    <div class="pdf-drop-text"><strong>Click to upload</strong> or drag & drop a PDF</div>
+                    <div class="pdf-selected" id="pdfSelected" style="display:none"></div>
+                </div>
+                <button id="pdfBtn" class="btn" disabled>Generate from PDF</button>
+            </div>
         </div>
 
         <div id="loadingState" class="loading">
             <div class="spinner"></div>
             <div class="loading-steps">
-                <div class="loading-step" id="step1">Fetching article from RSS…</div>
-                <div class="loading-step" id="step2">Scraping content…</div>
+                <div class="loading-step" id="step1">Getting content…</div>
+                <div class="loading-step" id="step2">Processing text…</div>
                 <div class="loading-step" id="step3">Translating with AI…</div>
             </div>
         </div>
@@ -780,33 +854,79 @@ function updateApiKeyStatus(hasKey) {
 // ══════════════════════════════════════════
 // GENERATE LESSON
 // ══════════════════════════════════════════
-document.getElementById('generateBtn').addEventListener('click', async function () {
+// ── Source picker tabs ──
+let currentSource = 'random';
+document.querySelectorAll('.source-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.source-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.source-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        currentSource = tab.dataset.source;
+        document.getElementById('panel-' + currentSource).classList.add('active');
+    });
+});
+
+// ── PDF drag & drop / file picker ──
+let selectedPdfData = null;
+
+const pdfDrop = document.getElementById('pdfDrop');
+const pdfFile = document.getElementById('pdfFile');
+const pdfBtn = document.getElementById('pdfBtn');
+const pdfSelected = document.getElementById('pdfSelected');
+
+pdfDrop.addEventListener('click', () => pdfFile.click());
+pdfDrop.addEventListener('dragover', e => { e.preventDefault(); pdfDrop.classList.add('drag-over'); });
+pdfDrop.addEventListener('dragleave', () => pdfDrop.classList.remove('drag-over'));
+pdfDrop.addEventListener('drop', e => {
+    e.preventDefault();
+    pdfDrop.classList.remove('drag-over');
+    const file = e.dataTransfer.files[0];
+    if (file && file.type === 'application/pdf') handlePdfFile(file);
+    else showToast('Please drop a PDF file');
+});
+pdfFile.addEventListener('change', () => {
+    if (pdfFile.files[0]) handlePdfFile(pdfFile.files[0]);
+});
+
+function handlePdfFile(file) {
+    if (file.size > 10 * 1024 * 1024) { showToast('PDF too large (max 10MB)'); return; }
+    const reader = new FileReader();
+    reader.onload = e => {
+        // Strip the data URL prefix to get raw base64
+        selectedPdfData = { b64: e.target.result.split(',')[1], name: file.name };
+        pdfSelected.style.display = 'block';
+        pdfSelected.textContent = '✓ ' + file.name + ' (' + (file.size / 1024).toFixed(0) + ' KB)';
+        pdfBtn.disabled = false;
+    };
+    reader.readAsDataURL(file);
+}
+
+// ── Core lesson fetch function ──
+async function fetchLesson(endpoint, body, buttons) {
     if (!apiKey) { document.getElementById('apiKeyModal').classList.add('active'); return; }
 
-    const btn = this;
     const loading = document.getElementById('loadingState');
     const empty = document.getElementById('emptyState');
     const content = document.getElementById('appContent');
 
-    btn.disabled = true;
+    buttons.forEach(b => b.disabled = true);
     loading.classList.add('active');
     empty.style.display = 'none';
     content.style.display = 'none';
 
-    // Animated loading steps
     const steps = ['step1', 'step2', 'step3'];
     let stepIdx = 0;
     document.querySelectorAll('.loading-step').forEach(s => s.className = 'loading-step');
     const stepTimer = setInterval(() => {
         if (stepIdx > 0) document.getElementById(steps[stepIdx - 1]).className = 'loading-step done';
         if (stepIdx < steps.length) { document.getElementById(steps[stepIdx]).className = 'loading-step active'; stepIdx++; }
-    }, 2500);
+    }, 3000);
 
     try {
-        const response = await fetch('/api', {
+        const response = await fetch(endpoint, {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ api_key: apiKey })
+            body: JSON.stringify({ api_key: apiKey, ...body })
         });
         const result = await response.json();
 
@@ -814,7 +934,6 @@ document.getElementById('generateBtn').addEventListener('click', async function 
             lessonData = result.data;
             renderLesson();
             content.style.display = 'block';
-            // Switch to lesson tab
             document.querySelector('[data-tab="lesson"]').click();
         } else {
             const err = result.error || 'Unknown error';
@@ -830,8 +949,29 @@ document.getElementById('generateBtn').addEventListener('click', async function 
         clearInterval(stepTimer);
         steps.forEach(s => document.getElementById(s).className = 'loading-step');
         loading.classList.remove('active');
-        btn.disabled = false;
+        buttons.forEach(b => b.disabled = false);
     }
+}
+
+// ── Random article ──
+document.getElementById('generateBtn').addEventListener('click', function () {
+    fetchLesson('/api', {}, [this]);
+});
+
+// ── URL ──
+document.getElementById('urlBtn').addEventListener('click', function () {
+    const url = document.getElementById('urlInput').value.trim();
+    if (!url) { showToast('Please enter a URL'); return; }
+    fetchLesson('/api/process-custom', { mode: 'url', url }, [this]);
+});
+document.getElementById('urlInput').addEventListener('keydown', e => {
+    if (e.key === 'Enter') document.getElementById('urlBtn').click();
+});
+
+// ── PDF ──
+document.getElementById('pdfBtn').addEventListener('click', function () {
+    if (!selectedPdfData) { showToast('Please select a PDF first'); return; }
+    fetchLesson('/api/process-custom', { mode: 'pdf', pdf_data: selectedPdfData.b64, filename: selectedPdfData.name }, [this]);
 });
 
 // ══════════════════════════════════════════
