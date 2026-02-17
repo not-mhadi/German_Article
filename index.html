@@ -8,643 +8,402 @@
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700&display=swap" rel="stylesheet">
 <style>
-    * {
-        margin: 0;
-        padding: 0;
-        box-sizing: border-box;
-    }
-
-    :root {
-        --bg: #0a0a0a;
-        --surface: #1a1a1a;
-        --surface-hover: #252525;
-        --border: #2a2a2a;
-        --text: #e8e8e8;
-        --text-dim: #a0a0a0;
-        --text-subtle: #6a6a6a;
-        --accent: #3b82f6;
-        --accent-hover: #2563eb;
-        --success: #10b981;
-        --error: #ef4444;
-    }
-
-    body {
-        font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
-        background: var(--bg);
-        color: var(--text);
-        line-height: 1.6;
-        min-height: 100vh;
-    }
-
-    .container {
-        max-width: 900px;
-        margin: 0 auto;
-        padding: 2rem 1.5rem;
-    }
-
-    /* Header */
-    .header {
-        padding: 2rem 0 3rem;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 2rem;
-    }
-
-    .logo {
-        font-size: 1.5rem;
-        font-weight: 700;
-        color: var(--text);
-        margin-bottom: 0.5rem;
-    }
-
-    .subtitle {
-        color: var(--text-dim);
-        font-size: 0.95rem;
-    }
-
-    /* API Key Modal */
-    .modal {
-        display: none;
-        position: fixed;
-        top: 0;
-        left: 0;
-        width: 100%;
-        height: 100%;
-        background: rgba(0, 0, 0, 0.8);
-        z-index: 1000;
-        align-items: center;
-        justify-content: center;
-    }
-
-    .modal.active {
-        display: flex;
-    }
-
-    .modal-content {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 12px;
-        padding: 2rem;
-        max-width: 500px;
-        width: 90%;
-    }
-
-    .modal-title {
-        font-size: 1.5rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .modal-description {
-        color: var(--text-dim);
-        margin-bottom: 1.5rem;
-        line-height: 1.6;
-    }
-
-    .modal-description a {
-        color: var(--accent);
-        text-decoration: none;
-    }
-
-    .modal-description a:hover {
-        text-decoration: underline;
-    }
-
-    .input-group {
-        margin-bottom: 1.5rem;
-    }
-
-    .input-label {
-        display: block;
-        margin-bottom: 0.5rem;
-        font-weight: 500;
-        font-size: 0.9rem;
-    }
-
-    .input {
-        width: 100%;
-        padding: 0.75rem;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        color: var(--text);
-        font-family: inherit;
-        font-size: 0.95rem;
-    }
-
-    .input:focus {
-        outline: none;
-        border-color: var(--accent);
-    }
-
-    .checkbox-group {
-        display: flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-bottom: 1.5rem;
-    }
-
-    .checkbox {
-        width: 18px;
-        height: 18px;
-        cursor: pointer;
-    }
-
-    .checkbox-label {
-        font-size: 0.9rem;
-        color: var(--text-dim);
-        cursor: pointer;
-    }
-
-    .modal-actions {
-        display: flex;
-        gap: 0.75rem;
-    }
-
-    /* Generate Section */
-    .generate-section {
-        margin-bottom: 3rem;
-    }
-
-    .api-key-status {
-        display: inline-flex;
-        align-items: center;
-        gap: 0.5rem;
-        margin-left: 1rem;
-        font-size: 0.85rem;
-        color: var(--text-subtle);
-    }
-
-    .status-dot {
-        width: 8px;
-        height: 8px;
-        border-radius: 50%;
-        background: var(--error);
-    }
-
-    .status-dot.active {
-        background: var(--success);
-    }
-
-    .btn {
-        background: var(--accent);
-        color: white;
-        border: none;
-        padding: 0.875rem 1.75rem;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        font-weight: 500;
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: inherit;
-    }
-
-    .btn:hover:not(:disabled) {
-        background: var(--accent-hover);
-        transform: translateY(-1px);
-    }
-
-    .btn:disabled {
-        opacity: 0.5;
-        cursor: not-allowed;
-    }
-
-    .btn-secondary {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: var(--text);
-        padding: 0.625rem 1.25rem;
-        font-size: 0.875rem;
-    }
-
-    .btn-secondary:hover:not(:disabled) {
-        background: var(--surface-hover);
-    }
-
-    .btn-outline {
-        background: transparent;
-        border: 1px solid var(--border);
-        color: var(--text);
-    }
-
-    .btn-outline:hover:not(:disabled) {
-        background: var(--surface-hover);
-    }
-
-    /* Loading State */
-    .loading {
-        display: none;
-        text-align: center;
-        padding: 3rem 0;
-    }
-
-    .loading.active {
-        display: block;
-    }
-
-    .spinner {
-        width: 40px;
-        height: 40px;
-        border: 3px solid var(--border);
-        border-top-color: var(--accent);
-        border-radius: 50%;
-        animation: spin 0.8s linear infinite;
-        margin: 0 auto 1rem;
-    }
-
-    @keyframes spin {
-        to { transform: rotate(360deg); }
-    }
-
-    .loading-text {
-        color: var(--text-dim);
-        font-size: 0.95rem;
-    }
-
-    /* Stats Bar */
-    .stats {
-        display: flex;
-        gap: 2rem;
-        padding: 1.5rem 0;
-        border-bottom: 1px solid var(--border);
-        margin-bottom: 2rem;
-    }
-
-    .stat {
-        flex: 1;
-    }
-
-    .stat-value {
-        font-size: 1.75rem;
-        font-weight: 600;
-        color: var(--accent);
-        display: block;
-    }
-
-    .stat-label {
-        font-size: 0.8rem;
-        color: var(--text-subtle);
-        text-transform: uppercase;
-        letter-spacing: 0.5px;
-    }
-
-    /* Controls */
-    .controls {
-        display: flex;
-        gap: 0.75rem;
-        margin-bottom: 2rem;
-        flex-wrap: wrap;
-    }
-
-    /* Article Header */
-    .article-header {
-        margin-bottom: 2rem;
-        padding-bottom: 2rem;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .article-title {
-        font-size: 1.75rem;
-        font-weight: 600;
-        margin-bottom: 1rem;
-        line-height: 1.3;
-    }
-
-    .article-summary {
-        color: var(--text-dim);
-        font-size: 1rem;
-        line-height: 1.7;
-    }
-
-    .article-meta {
-        display: flex;
-        gap: 1rem;
-        margin-top: 1rem;
-        font-size: 0.85rem;
-        color: var(--text-subtle);
-    }
-
-    /* Translation Blocks */
-    .translation-block {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        border-radius: 8px;
-        padding: 1.5rem;
-        margin-bottom: 1rem;
-        transition: all 0.2s;
-    }
-
-    .translation-block:hover {
-        border-color: var(--accent);
-    }
-
-    .sentence-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1rem;
-    }
-
-    .sentence-number {
-        background: var(--accent);
-        color: white;
-        width: 28px;
-        height: 28px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-size: 0.85rem;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-
-    .german-text {
-        font-size: 1.05rem;
-        line-height: 1.7;
-        flex: 1;
-    }
-
-    .hover-word {
-        position: relative;
-        cursor: help;
-        border-bottom: 1px dotted var(--accent);
-        padding: 0 2px;
-    }
-
-    .hover-word:hover {
-        color: var(--accent);
-    }
-
-    .hover-word::after {
-        content: attr(data-translation);
-        position: absolute;
-        bottom: 125%;
-        left: 50%;
-        transform: translateX(-50%);
-        background: var(--surface);
-        border: 1px solid var(--border);
-        color: var(--text);
-        padding: 0.375rem 0.625rem;
-        border-radius: 4px;
-        font-size: 0.8rem;
-        white-space: nowrap;
-        opacity: 0;
-        visibility: hidden;
-        transition: all 0.2s;
-        z-index: 10;
-        pointer-events: none;
-    }
-
-    .hover-word:hover::after {
-        opacity: 1;
-        visibility: visible;
-    }
-
-    .english-text {
-        background: var(--bg);
-        border: 1px solid var(--border);
-        color: var(--text-dim);
-        padding: 1rem;
-        border-radius: 6px;
-        font-size: 0.95rem;
-        font-style: italic;
-        margin-top: 1rem;
-        transition: all 0.2s;
-    }
-
-    .english-text.hidden {
-        display: none;
-    }
-
-    .grammar-note {
-        margin-top: 0.75rem;
-        padding: 0.75rem;
-        background: var(--bg);
-        border-left: 3px solid var(--accent);
-        border-radius: 4px;
-        font-size: 0.875rem;
-        color: var(--text-dim);
-    }
-
-    /* Vocabulary Section */
-    .vocab-section {
-        margin: 3rem 0;
-    }
-
-    .section-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 1.5rem;
-        padding-bottom: 0.75rem;
-        border-bottom: 1px solid var(--border);
-    }
-
-    .vocab-grid {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(250px, 1fr));
-        gap: 1rem;
-    }
-
-    .vocab-card {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 1.25rem;
-        border-radius: 6px;
-        transition: all 0.2s;
-    }
-
-    .vocab-card:hover {
-        border-color: var(--accent);
-        transform: translateY(-2px);
-    }
-
-    .vocab-word {
-        font-size: 1.1rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-    }
-
-    .vocab-translation {
-        color: var(--accent);
-        font-weight: 500;
-        margin-bottom: 0.75rem;
-    }
-
-    .vocab-example {
-        font-size: 0.85rem;
-        color: var(--text-subtle);
-        font-style: italic;
-        padding-top: 0.75rem;
-        border-top: 1px solid var(--border);
-    }
-
-    /* Quiz Section */
-    .quiz-section {
-        margin: 3rem 0;
-    }
-
-    .quiz-question {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 1.5rem;
-        border-radius: 8px;
-        margin-bottom: 1.5rem;
-    }
-
-    .question-header {
-        display: flex;
-        align-items: center;
-        gap: 1rem;
-        margin-bottom: 1.25rem;
-    }
-
-    .question-number {
-        background: var(--accent);
-        color: white;
-        width: 32px;
-        height: 32px;
-        border-radius: 50%;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        font-weight: 600;
-        flex-shrink: 0;
-    }
-
-    .question-text {
-        font-size: 1.05rem;
-        font-weight: 500;
-        flex: 1;
-    }
-
-    .option-btn {
-        width: 100%;
-        text-align: left;
-        padding: 0.875rem 1rem;
-        margin-bottom: 0.75rem;
-        background: var(--bg);
-        border: 1px solid var(--border);
-        border-radius: 6px;
-        color: var(--text);
-        cursor: pointer;
-        transition: all 0.2s;
-        font-family: inherit;
-        font-size: 0.95rem;
-    }
-
-    .option-btn:hover:not(:disabled) {
-        background: var(--surface-hover);
-        border-color: var(--accent);
-    }
-
-    .option-btn.correct {
-        background: rgba(16, 185, 129, 0.1);
-        border-color: var(--success);
-        color: var(--success);
-    }
-
-    .option-btn.wrong {
-        background: rgba(239, 68, 68, 0.1);
-        border-color: var(--error);
-        color: var(--error);
-    }
-
-    .option-btn:disabled {
-        cursor: not-allowed;
-    }
-
-    .explanation {
-        margin-top: 1rem;
-        padding: 1rem;
-        background: var(--bg);
-        border-left: 3px solid var(--accent);
-        border-radius: 4px;
-        font-size: 0.9rem;
-        color: var(--text-dim);
-        display: none;
-    }
-
-    .explanation.show {
-        display: block;
-    }
-
-    /* Score Display */
-    .quiz-score {
-        background: var(--surface);
-        border: 1px solid var(--border);
-        padding: 1.5rem;
-        border-radius: 8px;
-        text-align: center;
-        margin-bottom: 2rem;
-        display: none;
-    }
-
-    .quiz-score.show {
-        display: block;
-    }
-
-    .score-value {
-        font-size: 2.5rem;
-        font-weight: 700;
-        color: var(--accent);
-        margin-bottom: 0.5rem;
-    }
-
-    .score-message {
-        color: var(--text-dim);
-        font-size: 1rem;
-    }
-
-    /* Empty State */
-    .empty-state {
-        text-align: center;
-        padding: 4rem 2rem;
-        color: var(--text-dim);
-    }
-
-    .empty-state-icon {
-        font-size: 3rem;
-        margin-bottom: 1rem;
-    }
-
-    .empty-state-title {
-        font-size: 1.25rem;
-        font-weight: 600;
-        margin-bottom: 0.5rem;
-        color: var(--text);
-    }
-
-    .empty-state-text {
-        font-size: 0.95rem;
-    }
-
-    /* Responsive */
-    @media (max-width: 768px) {
-        .container {
-            padding: 1.5rem 1rem;
-        }
-
-        .stats {
-            flex-direction: column;
-            gap: 1rem;
-        }
-
-        .vocab-grid {
-            grid-template-columns: 1fr;
-        }
-
-        .controls {
-            flex-direction: column;
-        }
-
-        .btn, .btn-secondary {
-            width: 100%;
-        }
-
-        .modal-content {
-            padding: 1.5rem;
-        }
-    }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+:root {
+    --bg: #0a0a0a;
+    --surface: #1a1a1a;
+    --surface-hover: #252525;
+    --border: #2a2a2a;
+    --text: #e8e8e8;
+    --text-dim: #a0a0a0;
+    --text-subtle: #6a6a6a;
+    --accent: #3b82f6;
+    --accent-hover: #2563eb;
+    --success: #10b981;
+    --error: #ef4444;
+    --warn: #f59e0b;
+}
+
+body {
+    font-family: 'Inter', -apple-system, BlinkMacSystemFont, sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    line-height: 1.6;
+    min-height: 100vh;
+}
+
+.container { max-width: 900px; margin: 0 auto; padding: 2rem 1.5rem; }
+
+/* ── NAV TABS ── */
+.nav-tabs {
+    display: flex;
+    gap: 0;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 2rem;
+}
+.nav-tab {
+    padding: 0.75rem 1.25rem;
+    background: none;
+    border: none;
+    border-bottom: 2px solid transparent;
+    color: var(--text-subtle);
+    font-family: inherit;
+    font-size: 0.9rem;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.2s;
+    margin-bottom: -1px;
+}
+.nav-tab:hover { color: var(--text); }
+.nav-tab.active { color: var(--accent); border-bottom-color: var(--accent); }
+.nav-tab .tab-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background: var(--accent);
+    color: white;
+    border-radius: 10px;
+    font-size: 0.7rem;
+    font-weight: 600;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 5px;
+    margin-left: 6px;
+}
+.tab-panel { display: none; }
+.tab-panel.active { display: block; }
+
+/* ── HEADER ── */
+.header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 2rem 0 1.5rem;
+    border-bottom: 1px solid var(--border);
+    margin-bottom: 1.5rem;
+}
+.header-left .logo { font-size: 1.4rem; font-weight: 700; margin-bottom: 0.25rem; }
+.header-left .subtitle { color: var(--text-dim); font-size: 0.9rem; }
+.header-right { display: flex; align-items: center; gap: 1rem; }
+
+/* ── MODAL ── */
+.modal {
+    display: none; position: fixed; top: 0; left: 0;
+    width: 100%; height: 100%; background: rgba(0,0,0,0.85);
+    z-index: 1000; align-items: center; justify-content: center;
+}
+.modal.active { display: flex; }
+.modal-content {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 12px; padding: 2rem; max-width: 520px; width: 90%;
+    max-height: 90vh; overflow-y: auto;
+}
+.modal-title { font-size: 1.3rem; font-weight: 600; margin-bottom: 0.5rem; }
+.modal-description { color: var(--text-dim); margin-bottom: 1.5rem; font-size: 0.9rem; line-height: 1.6; }
+.modal-description a { color: var(--accent); text-decoration: none; }
+.modal-actions { display: flex; gap: 0.75rem; margin-top: 1rem; }
+
+/* ── INPUTS ── */
+.input-group { margin-bottom: 1.25rem; }
+.input-label { display: block; margin-bottom: 0.5rem; font-weight: 500; font-size: 0.875rem; }
+.input {
+    width: 100%; padding: 0.75rem;
+    background: var(--bg); border: 1px solid var(--border);
+    border-radius: 6px; color: var(--text);
+    font-family: inherit; font-size: 0.9rem;
+}
+.input:focus { outline: none; border-color: var(--accent); }
+.checkbox-group { display: flex; align-items: center; gap: 0.5rem; margin-bottom: 1.25rem; }
+.checkbox { width: 16px; height: 16px; cursor: pointer; }
+.checkbox-label { font-size: 0.875rem; color: var(--text-dim); cursor: pointer; }
+
+/* ── BUTTONS ── */
+.btn {
+    background: var(--accent); color: white; border: none;
+    padding: 0.75rem 1.5rem; border-radius: 6px;
+    font-size: 0.9rem; font-weight: 500; cursor: pointer;
+    transition: all 0.2s; font-family: inherit; white-space: nowrap;
+}
+.btn:hover:not(:disabled) { background: var(--accent-hover); transform: translateY(-1px); }
+.btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+.btn-sm { padding: 0.5rem 1rem; font-size: 0.8rem; }
+.btn-secondary {
+    background: var(--surface); border: 1px solid var(--border);
+    color: var(--text); padding: 0.5rem 1rem; font-size: 0.8rem;
+}
+.btn-secondary:hover:not(:disabled) { background: var(--surface-hover); }
+.btn-ghost {
+    background: transparent; border: 1px solid var(--border);
+    color: var(--text-dim); padding: 0.5rem 1rem; font-size: 0.8rem;
+}
+.btn-ghost:hover:not(:disabled) { background: var(--surface); color: var(--text); }
+.btn-icon {
+    background: none; border: none; color: var(--text-subtle);
+    cursor: pointer; padding: 0.25rem; font-size: 1.1rem;
+    transition: color 0.15s; line-height: 1;
+}
+.btn-icon:hover { color: var(--text); }
+.btn-icon.saved { color: var(--warn); }
+
+/* ── STATUS DOT ── */
+.api-key-status { display: inline-flex; align-items: center; gap: 0.4rem; font-size: 0.8rem; color: var(--text-subtle); }
+.status-dot { width: 7px; height: 7px; border-radius: 50%; background: var(--error); }
+.status-dot.active { background: var(--success); }
+
+/* ── LOADING ── */
+.loading { display: none; text-align: center; padding: 3rem 0; }
+.loading.active { display: block; }
+.spinner {
+    width: 38px; height: 38px;
+    border: 3px solid var(--border); border-top-color: var(--accent);
+    border-radius: 50%; animation: spin 0.8s linear infinite; margin: 0 auto 1rem;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+.loading-steps { margin-top: 1rem; }
+.loading-step { font-size: 0.85rem; color: var(--text-subtle); margin: 0.3rem 0; transition: color 0.3s; }
+.loading-step.active { color: var(--accent); }
+.loading-step.done { color: var(--success); }
+
+/* ── STATS ── */
+.stats {
+    display: flex; gap: 0;
+    border: 1px solid var(--border); border-radius: 8px;
+    margin-bottom: 2rem; overflow: hidden;
+}
+.stat { flex: 1; padding: 1.25rem 1.5rem; border-right: 1px solid var(--border); }
+.stat:last-child { border-right: none; }
+.stat-value { font-size: 1.6rem; font-weight: 600; color: var(--accent); display: block; }
+.stat-label { font-size: 0.75rem; color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.5px; }
+
+/* ── CONTROLS ── */
+.controls { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; flex-wrap: wrap; align-items: center; }
+.controls-right { margin-left: auto; display: flex; gap: 0.5rem; }
+
+/* ── ARTICLE HEADER ── */
+.article-header { margin-bottom: 2rem; padding-bottom: 1.5rem; border-bottom: 1px solid var(--border); }
+.article-title { font-size: 1.6rem; font-weight: 600; margin-bottom: 0.75rem; line-height: 1.3; }
+.article-summary { color: var(--text-dim); font-size: 0.95rem; line-height: 1.7; }
+.article-meta { display: flex; gap: 1rem; margin-top: 0.75rem; font-size: 0.8rem; color: var(--text-subtle); align-items: center; }
+.article-meta a { color: var(--accent); text-decoration: none; }
+
+/* ── TRANSLATION BLOCKS ── */
+.translation-block {
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; padding: 1.25rem; margin-bottom: 0.75rem;
+    transition: border-color 0.2s;
+}
+.translation-block:hover { border-color: #3a3a3a; }
+.sentence-header { display: flex; align-items: flex-start; gap: 0.875rem; }
+.sentence-number {
+    background: var(--accent); color: white;
+    width: 26px; height: 26px; border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 0.8rem; font-weight: 600; flex-shrink: 0; margin-top: 2px;
+}
+.german-text { font-size: 1rem; line-height: 1.75; flex: 1; }
+.sentence-actions { display: flex; gap: 0.25rem; flex-shrink: 0; margin-top: 2px; }
+
+/* audio button pulse while playing */
+.btn-icon.playing { color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+@keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+/* word tooltips */
+.hover-word { position: relative; cursor: help; border-bottom: 1px dotted var(--accent); padding: 0 1px; transition: color 0.15s; }
+.hover-word:hover { color: var(--accent); }
+.hover-word::after {
+    content: attr(data-translation);
+    position: absolute; bottom: 125%; left: 50%; transform: translateX(-50%);
+    background: #111; border: 1px solid var(--border); color: var(--text);
+    padding: 0.3rem 0.5rem; border-radius: 4px; font-size: 0.75rem;
+    white-space: nowrap; opacity: 0; visibility: hidden; transition: all 0.15s;
+    z-index: 10; pointer-events: none;
+}
+.hover-word:hover::after { opacity: 1; visibility: visible; }
+
+.english-text {
+    background: var(--bg); border: 1px solid var(--border);
+    color: var(--text-dim); padding: 0.875rem; border-radius: 6px;
+    font-size: 0.9rem; font-style: italic; margin-top: 0.875rem;
+}
+.english-text.hidden { display: none; }
+.grammar-note {
+    margin-top: 0.75rem; padding: 0.625rem 0.875rem;
+    background: var(--bg); border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0; font-size: 0.82rem; color: var(--text-dim);
+}
+
+/* ── CLOZE MODE ── */
+.cloze-input {
+    background: var(--bg); border: 1px solid var(--accent);
+    border-radius: 4px; color: var(--text);
+    font-family: inherit; font-size: 1rem; padding: 0.1rem 0.4rem;
+    width: 9ch; text-align: center; transition: border-color 0.2s;
+}
+.cloze-input:focus { outline: none; border-color: var(--accent); box-shadow: 0 0 0 2px rgba(59,130,246,0.2); }
+.cloze-input.correct { border-color: var(--success); background: rgba(16,185,129,0.1); color: var(--success); }
+.cloze-input.wrong { border-color: var(--error); background: rgba(239,68,68,0.1); color: var(--error); }
+.cloze-answer { color: var(--success); font-weight: 500; }
+.cloze-bar {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 1rem 1.25rem; background: var(--surface); border: 1px solid var(--border);
+    border-radius: 8px; margin-bottom: 1.5rem;
+}
+.cloze-score-text { font-size: 0.875rem; color: var(--text-dim); }
+.cloze-score-text strong { color: var(--accent); }
+
+/* ── SECTION TITLES ── */
+.section-title {
+    font-size: 1.1rem; font-weight: 600; margin-bottom: 1.25rem;
+    padding-bottom: 0.75rem; border-bottom: 1px solid var(--border);
+    display: flex; align-items: center; justify-content: space-between;
+}
+
+/* ── VOCAB CARDS ── */
+.vocab-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(240px, 1fr)); gap: 0.875rem; }
+.vocab-card {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.125rem; border-radius: 6px; transition: all 0.2s;
+    display: flex; flex-direction: column; gap: 0.25rem;
+}
+.vocab-card:hover { border-color: #3a3a3a; transform: translateY(-1px); }
+.vocab-word { font-size: 1.05rem; font-weight: 600; }
+.vocab-translation { color: var(--accent); font-weight: 500; font-size: 0.9rem; }
+.vocab-example { font-size: 0.8rem; color: var(--text-subtle); font-style: italic; padding-top: 0.625rem; border-top: 1px solid var(--border); margin-top: auto; }
+.vocab-save-row { display: flex; justify-content: flex-end; margin-top: 0.5rem; }
+
+/* ── QUIZ ── */
+.quiz-question {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.25rem; border-radius: 8px; margin-bottom: 1.25rem;
+}
+.question-header { display: flex; align-items: flex-start; gap: 0.875rem; margin-bottom: 1rem; }
+.question-number {
+    background: var(--accent); color: white; width: 30px; height: 30px;
+    border-radius: 50%; display: flex; align-items: center; justify-content: center;
+    font-weight: 600; flex-shrink: 0; font-size: 0.85rem;
+}
+.question-text { font-size: 1rem; font-weight: 500; flex: 1; padding-top: 3px; }
+.option-btn {
+    width: 100%; text-align: left; padding: 0.75rem 0.875rem; margin-bottom: 0.5rem;
+    background: var(--bg); border: 1px solid var(--border); border-radius: 6px;
+    color: var(--text); cursor: pointer; transition: all 0.15s; font-family: inherit; font-size: 0.9rem;
+}
+.option-btn:hover:not(:disabled) { background: var(--surface-hover); border-color: var(--accent); }
+.option-btn.correct { background: rgba(16,185,129,0.1); border-color: var(--success); color: var(--success); }
+.option-btn.wrong { background: rgba(239,68,68,0.1); border-color: var(--error); color: var(--error); }
+.option-btn:disabled { cursor: not-allowed; }
+.explanation {
+    margin-top: 0.875rem; padding: 0.875rem;
+    background: var(--bg); border-left: 2px solid var(--accent);
+    border-radius: 0 4px 4px 0; font-size: 0.875rem; color: var(--text-dim); display: none;
+}
+.explanation.show { display: block; }
+.quiz-score {
+    background: var(--surface); border: 1px solid var(--border);
+    padding: 1.5rem; border-radius: 8px; text-align: center;
+    margin-bottom: 1.5rem; display: none;
+}
+.quiz-score.show { display: block; }
+.score-value { font-size: 2.25rem; font-weight: 700; color: var(--accent); margin-bottom: 0.25rem; }
+.score-message { color: var(--text-dim); font-size: 0.95rem; }
+
+/* ── WORD LIST TAB ── */
+.wordlist-empty { text-align: center; padding: 3rem 1rem; color: var(--text-subtle); }
+.wordlist-empty-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.wordlist-controls { display: flex; gap: 0.5rem; margin-bottom: 1.5rem; align-items: center; }
+.wordlist-table { width: 100%; border-collapse: collapse; }
+.wordlist-table th {
+    text-align: left; padding: 0.625rem 0.875rem; font-size: 0.75rem;
+    color: var(--text-subtle); text-transform: uppercase; letter-spacing: 0.5px;
+    border-bottom: 1px solid var(--border); font-weight: 500;
+}
+.wordlist-table td { padding: 0.75rem 0.875rem; border-bottom: 1px solid var(--border); font-size: 0.9rem; vertical-align: middle; }
+.wordlist-table tr:last-child td { border-bottom: none; }
+.wordlist-table tr:hover td { background: var(--surface); }
+.word-german { font-weight: 500; }
+.word-translation { color: var(--text-dim); }
+.word-translation.hidden-translation { filter: blur(5px); cursor: pointer; user-select: none; }
+.word-translation.hidden-translation:hover { filter: blur(0); }
+.word-source { font-size: 0.78rem; color: var(--text-subtle); font-style: italic; }
+.word-actions { display: flex; gap: 0.25rem; }
+
+/* ── FLASHCARD (SRS) ── */
+.flashcard-container { perspective: 1000px; margin: 1.5rem 0; }
+.flashcard {
+    width: 100%; min-height: 200px; position: relative;
+    transform-style: preserve-3d; transition: transform 0.45s ease;
+    cursor: pointer;
+}
+.flashcard.flipped { transform: rotateY(180deg); }
+.flashcard-face {
+    position: absolute; width: 100%; min-height: 200px;
+    backface-visibility: hidden; -webkit-backface-visibility: hidden;
+    background: var(--surface); border: 1px solid var(--border);
+    border-radius: 10px; display: flex; flex-direction: column;
+    align-items: center; justify-content: center; padding: 2rem;
+    text-align: center;
+}
+.flashcard-back { transform: rotateY(180deg); }
+.flashcard-word { font-size: 2rem; font-weight: 600; margin-bottom: 0.5rem; }
+.flashcard-hint { font-size: 0.8rem; color: var(--text-subtle); margin-top: 0.75rem; }
+.flashcard-translation { font-size: 1.4rem; color: var(--accent); font-weight: 500; }
+.flashcard-example { font-size: 0.875rem; color: var(--text-dim); font-style: italic; margin-top: 0.75rem; }
+.flashcard-nav { display: flex; align-items: center; justify-content: space-between; margin-top: 1rem; }
+.flashcard-progress { font-size: 0.875rem; color: var(--text-subtle); }
+.srs-buttons { display: flex; gap: 0.75rem; justify-content: center; margin-top: 1rem; }
+.srs-btn {
+    padding: 0.625rem 1.25rem; border-radius: 6px; border: 1px solid;
+    font-family: inherit; font-size: 0.85rem; font-weight: 500; cursor: pointer; transition: all 0.15s;
+}
+.srs-btn-again { border-color: var(--error); color: var(--error); background: rgba(239,68,68,0.08); }
+.srs-btn-again:hover { background: rgba(239,68,68,0.18); }
+.srs-btn-hard { border-color: var(--warn); color: var(--warn); background: rgba(245,158,11,0.08); }
+.srs-btn-hard:hover { background: rgba(245,158,11,0.18); }
+.srs-btn-good { border-color: var(--success); color: var(--success); background: rgba(16,185,129,0.08); }
+.srs-btn-good:hover { background: rgba(16,185,129,0.18); }
+.srs-session-done { text-align: center; padding: 3rem 1rem; }
+.srs-session-done h3 { font-size: 1.25rem; margin-bottom: 0.5rem; }
+.srs-session-done p { color: var(--text-dim); font-size: 0.95rem; margin-bottom: 1.5rem; }
+.srs-stats { display: flex; gap: 1rem; justify-content: center; margin-bottom: 1.5rem; }
+.srs-stat { text-align: center; }
+.srs-stat-value { font-size: 1.5rem; font-weight: 700; }
+.srs-stat-value.red { color: var(--error); }
+.srs-stat-value.yellow { color: var(--warn); }
+.srs-stat-value.green { color: var(--success); }
+.srs-stat-label { font-size: 0.75rem; color: var(--text-subtle); }
+.due-badge { display: inline-block; background: var(--warn); color: #000; border-radius: 4px; padding: 0.1rem 0.4rem; font-size: 0.7rem; font-weight: 600; margin-left: 0.5rem; }
+
+/* ── EMPTY STATE ── */
+.empty-state { text-align: center; padding: 4rem 2rem; color: var(--text-dim); }
+.empty-state-icon { font-size: 2.5rem; margin-bottom: 0.75rem; }
+.empty-state-title { font-size: 1.15rem; font-weight: 600; margin-bottom: 0.5rem; color: var(--text); }
+.empty-state-text { font-size: 0.9rem; }
+
+/* ── TOAST ── */
+.toast {
+    position: fixed; bottom: 1.5rem; left: 50%; transform: translateX(-50%) translateY(10px);
+    background: var(--surface); border: 1px solid var(--border); color: var(--text);
+    padding: 0.625rem 1.25rem; border-radius: 6px; font-size: 0.875rem;
+    opacity: 0; transition: all 0.25s; z-index: 999; pointer-events: none;
+    white-space: nowrap;
+}
+.toast.show { opacity: 1; transform: translateX(-50%) translateY(0); }
+
+/* ── RESPONSIVE ── */
+@media (max-width: 700px) {
+    .stats { flex-wrap: wrap; }
+    .stat { flex: 1 1 40%; }
+    .vocab-grid { grid-template-columns: 1fr 1fr; }
+    .header { flex-direction: column; align-items: flex-start; gap: 0.75rem; }
+    .controls { gap: 0.375rem; }
+    .nav-tab { padding: 0.625rem 0.875rem; font-size: 0.82rem; }
+}
+@media (max-width: 480px) {
+    .container { padding: 1.25rem 1rem; }
+    .vocab-grid { grid-template-columns: 1fr; }
+    .stat { flex: 1 1 100%; }
+}
 </style>
 </head>
 <body>
@@ -654,301 +413,549 @@
     <div class="modal-content">
         <h2 class="modal-title">Enter Your Groq API Key</h2>
         <p class="modal-description">
-            To use this app, you need a free Groq API key. 
+            You need a free Groq API key to generate lessons.
             <a href="https://console.groq.com/" target="_blank">Get one here →</a>
         </p>
         <div class="input-group">
             <label class="input-label">Groq API Key</label>
-            <input 
-                type="password" 
-                id="apiKeyInput" 
-                class="input" 
-                placeholder="gsk_..."
-            />
+            <input type="password" id="apiKeyInput" class="input" placeholder="gsk_..." />
         </div>
         <div class="checkbox-group">
-            <input type="checkbox" id="rememberKey" class="checkbox" />
-            <label for="rememberKey" class="checkbox-label">Remember my API key (stored locally)</label>
+            <input type="checkbox" id="rememberKey" class="checkbox" checked />
+            <label for="rememberKey" class="checkbox-label">Remember in this browser</label>
         </div>
         <div class="modal-actions">
-            <button id="saveApiKey" class="btn" style="flex: 1;">Start Learning</button>
+            <button id="saveApiKey" class="btn" style="flex:1">Start Learning</button>
         </div>
     </div>
 </div>
 
+<!-- Toast -->
+<div id="toast" class="toast"></div>
+
 <div class="container">
     <header class="header">
-        <h1 class="logo">Deutsche Lernwerkstatt</h1>
-        <p class="subtitle">Learn German through real news articles</p>
+        <div class="header-left">
+            <div class="logo">Deutsche Lernwerkstatt</div>
+            <div class="subtitle">Learn German through real news</div>
+        </div>
+        <div class="header-right">
+            <span class="api-key-status">
+                <span class="status-dot" id="statusDot"></span>
+                <span id="statusText">No key</span>
+            </span>
+            <button id="changeApiKey" class="btn-ghost btn-sm btn">Change Key</button>
+        </div>
     </header>
 
-    <div class="generate-section">
-        <button id="generateBtn" class="btn">Generate New Lesson</button>
-        <span class="api-key-status">
-            <span class="status-dot" id="statusDot"></span>
-            <span id="statusText">API key not set</span>
-        </span>
-        <button id="changeApiKey" class="btn-outline btn-secondary" style="float: right;">Change API Key</button>
+    <!-- Navigation -->
+    <nav class="nav-tabs">
+        <button class="nav-tab active" data-tab="lesson">Lesson</button>
+        <button class="nav-tab" data-tab="cloze">Fill-in-Blank</button>
+        <button class="nav-tab" data-tab="wordlist">My Words <span class="tab-badge" id="wordlistBadge">0</span></button>
+        <button class="nav-tab" data-tab="flashcards">Flashcards <span class="tab-badge due-badge" id="dueBadge" style="display:none"></span></button>
+    </nav>
+
+    <!-- ══════════ LESSON TAB ══════════ -->
+    <div id="tab-lesson" class="tab-panel active">
+        <div style="margin-bottom:2rem; display:flex; align-items:center; gap:1rem; flex-wrap:wrap;">
+            <button id="generateBtn" class="btn">Generate New Lesson</button>
+        </div>
+
+        <div id="loadingState" class="loading">
+            <div class="spinner"></div>
+            <div class="loading-steps">
+                <div class="loading-step" id="step1">Fetching article from RSS…</div>
+                <div class="loading-step" id="step2">Scraping content…</div>
+                <div class="loading-step" id="step3">Translating with AI…</div>
+            </div>
+        </div>
+
+        <div id="emptyState" class="empty-state">
+            <div class="empty-state-icon">📰</div>
+            <div class="empty-state-title">No lesson loaded</div>
+            <div class="empty-state-text">Click "Generate New Lesson" to get started</div>
+        </div>
+
+        <div id="appContent" style="display:none">
+            <div class="stats">
+                <div class="stat">
+                    <span class="stat-value" id="sentenceCount">0</span>
+                    <span class="stat-label">Sentences</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="quizCount">0</span>
+                    <span class="stat-label">Questions</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="scoreCount">—</span>
+                    <span class="stat-label">Quiz Score</span>
+                </div>
+                <div class="stat">
+                    <span class="stat-value" id="wordsSavedCount">0</span>
+                    <span class="stat-label">Words Saved</span>
+                </div>
+            </div>
+
+            <div class="controls">
+                <button id="toggleTranslations" class="btn-secondary btn">Hide Translations</button>
+                <button id="toggleTooltips" class="btn-secondary btn">Word Tooltips</button>
+                <button id="toggleAudio" class="btn-secondary btn">🔊 Audio Off</button>
+            </div>
+
+            <div class="article-header">
+                <h1 class="article-title" id="articleTitle"></h1>
+                <p class="article-summary" id="articleSummary"></p>
+                <div class="article-meta">
+                    <span id="articleDate"></span>
+                    <span>·</span>
+                    <a id="articleSource" href="#" target="_blank">View Source ↗</a>
+                </div>
+            </div>
+
+            <div id="articleContent"></div>
+
+            <div id="vocabSection" style="display:none; margin: 2.5rem 0;">
+                <div class="section-title">Key Vocabulary</div>
+                <div class="vocab-grid" id="vocabGrid"></div>
+            </div>
+
+            <div style="margin: 2.5rem 0;">
+                <div class="section-title">Reading Comprehension Quiz</div>
+                <div class="quiz-score" id="quizScore">
+                    <div class="score-value" id="scoreDisplay">—</div>
+                    <div class="score-message" id="scoreMessage"></div>
+                </div>
+                <div id="quizContent"></div>
+            </div>
+        </div>
     </div>
 
-    <div id="loadingState" class="loading">
-        <div class="spinner"></div>
-        <p class="loading-text">Generating your lesson...</p>
+    <!-- ══════════ CLOZE TAB ══════════ -->
+    <div id="tab-cloze" class="tab-panel">
+        <div id="clozeEmpty" class="empty-state">
+            <div class="empty-state-icon">✏️</div>
+            <div class="empty-state-title">No article loaded</div>
+            <div class="empty-state-text">Generate a lesson first, then come back here</div>
+        </div>
+        <div id="clozeContent" style="display:none">
+            <div class="cloze-bar">
+                <div class="cloze-score-text">Score: <strong id="clozeCorrect">0</strong> / <strong id="clozeTotal">0</strong></div>
+                <div style="display:flex; gap:0.5rem;">
+                    <button id="clozeCheck" class="btn btn-sm">Check All</button>
+                    <button id="clozeReset" class="btn-secondary btn btn-sm">Reset</button>
+                </div>
+            </div>
+            <div id="clozeBlocks"></div>
+        </div>
     </div>
 
-    <div id="emptyState" class="empty-state">
-        <div class="empty-state-icon">📚</div>
-        <h2 class="empty-state-title">No lesson loaded</h2>
-        <p class="empty-state-text">Click "Generate New Lesson" to get started</p>
+    <!-- ══════════ WORD LIST TAB ══════════ -->
+    <div id="tab-wordlist" class="tab-panel">
+        <div id="wordlistEmpty" class="empty-state">
+            <div class="empty-state-icon">📖</div>
+            <div class="empty-state-title">Your word list is empty</div>
+            <div class="empty-state-text">Click the bookmark icon on any word in a lesson to save it here</div>
+        </div>
+        <div id="wordlistContent" style="display:none">
+            <div class="wordlist-controls">
+                <button id="toggleAllTranslations" class="btn-secondary btn btn-sm">Hide All Translations</button>
+                <button id="studyFlashcards" class="btn btn-sm" style="margin-left:auto">Study as Flashcards →</button>
+                <button id="clearWordlist" class="btn-ghost btn btn-sm">Clear All</button>
+            </div>
+            <table class="wordlist-table">
+                <thead>
+                    <tr>
+                        <th>German</th>
+                        <th>Translation</th>
+                        <th>Source</th>
+                        <th></th>
+                    </tr>
+                </thead>
+                <tbody id="wordlistBody"></tbody>
+            </table>
+        </div>
     </div>
 
-    <div id="appContent" style="display: none;">
-        <div class="stats">
-            <div class="stat">
-                <span class="stat-value" id="sentenceCount">0</span>
-                <span class="stat-label">Sentences</span>
+    <!-- ══════════ FLASHCARDS TAB ══════════ -->
+    <div id="tab-flashcards" class="tab-panel">
+        <div id="flashcardEmpty" class="empty-state">
+            <div class="empty-state-icon">🃏</div>
+            <div class="empty-state-title">No words to review</div>
+            <div class="empty-state-text">Save words from lessons to study them here with spaced repetition</div>
+        </div>
+        <div id="flashcardContent" style="display:none">
+            <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:1.25rem; flex-wrap:wrap; gap:0.75rem;">
+                <div>
+                    <div style="font-size:0.8rem; color:var(--text-subtle); margin-bottom:0.2rem;">REVIEWING</div>
+                    <div id="flashcardDeckInfo" style="font-size:0.9rem; color:var(--text-dim)"></div>
+                </div>
+                <button id="skipCard" class="btn-ghost btn btn-sm">Skip →</button>
             </div>
-            <div class="stat">
-                <span class="stat-value" id="quizCount">0</span>
-                <span class="stat-label">Questions</span>
+
+            <div class="flashcard-container">
+                <div class="flashcard" id="flashcard">
+                    <div class="flashcard-face flashcard-front">
+                        <div class="flashcard-word" id="fcWord"></div>
+                        <div class="flashcard-hint">Click to reveal translation</div>
+                    </div>
+                    <div class="flashcard-face flashcard-back">
+                        <div class="flashcard-word" id="fcWordBack"></div>
+                        <div class="flashcard-translation" id="fcTranslation"></div>
+                        <div class="flashcard-example" id="fcExample"></div>
+                    </div>
+                </div>
             </div>
-            <div class="stat">
-                <span class="stat-value" id="scoreCount">0/0</span>
-                <span class="stat-label">Score</span>
+
+            <div id="srsButtons" style="display:none">
+                <p style="text-align:center; font-size:0.8rem; color:var(--text-subtle); margin-bottom:0.75rem;">How well did you know this?</p>
+                <div class="srs-buttons">
+                    <button class="srs-btn srs-btn-again" data-rating="0">Again</button>
+                    <button class="srs-btn srs-btn-hard" data-rating="1">Hard</button>
+                    <button class="srs-btn srs-btn-good" data-rating="2">Good</button>
+                </div>
+            </div>
+
+            <div class="flashcard-nav" style="margin-top:1.25rem;">
+                <span class="flashcard-progress" id="flashcardProgress"></span>
+                <span style="font-size:0.8rem; color:var(--text-subtle)">Click card to flip</span>
             </div>
         </div>
 
-        <div class="controls">
-            <button id="toggleTranslations" class="btn-secondary">Hide Translations</button>
-            <button id="toggleTooltips" class="btn-secondary">Enable Word Tooltips</button>
-        </div>
-
-        <div class="article-header">
-            <h1 class="article-title" id="articleTitle"></h1>
-            <p class="article-summary" id="articleSummary"></p>
-            <div class="article-meta">
-                <span id="articleDate"></span>
-                <span>•</span>
-                <a id="articleSource" href="#" target="_blank" style="color: var(--accent);">View Source</a>
+        <div id="flashcardDone" style="display:none" class="srs-session-done">
+            <div style="font-size:2.5rem; margin-bottom:0.75rem;">🎉</div>
+            <h3>Session Complete!</h3>
+            <p>You've reviewed all due cards.</p>
+            <div class="srs-stats">
+                <div class="srs-stat">
+                    <div class="srs-stat-value red" id="srsAgainCount">0</div>
+                    <div class="srs-stat-label">Again</div>
+                </div>
+                <div class="srs-stat">
+                    <div class="srs-stat-value yellow" id="srsHardCount">0</div>
+                    <div class="srs-stat-label">Hard</div>
+                </div>
+                <div class="srs-stat">
+                    <div class="srs-stat-value green" id="srsGoodCount">0</div>
+                    <div class="srs-stat-label">Good</div>
+                </div>
             </div>
-        </div>
-
-        <div id="articleContent"></div>
-
-        <div id="vocabSection" class="vocab-section" style="display: none;">
-            <h2 class="section-title">Key Vocabulary</h2>
-            <div class="vocab-grid" id="vocabGrid"></div>
-        </div>
-
-        <div class="quiz-section">
-            <h2 class="section-title">Reading Comprehension</h2>
-            <div class="quiz-score" id="quizScore">
-                <div class="score-value" id="scoreDisplay">0/0</div>
-                <div class="score-message" id="scoreMessage">Complete the quiz to see your score!</div>
-            </div>
-            <div id="quizContent"></div>
+            <button id="restartSession" class="btn">Study Again</button>
         </div>
     </div>
 </div>
 
 <script>
+// ══════════════════════════════════════════
+// STATE
+// ══════════════════════════════════════════
 let lessonData = null;
 let translationsVisible = true;
 let tooltipsEnabled = false;
+let audioEnabled = false;
 let quizAnswered = 0;
 let quizCorrect = 0;
 let apiKey = null;
 
-// Check for saved API key on load
-window.addEventListener('DOMContentLoaded', () => {
-    const savedKey = localStorage.getItem('groq_api_key');
-    if (savedKey) {
-        apiKey = savedKey;
-        updateApiKeyStatus(true);
-        document.getElementById('apiKeyModal').classList.remove('active');
-    }
+// SRS session state
+let srsQueue = [];
+let srsIndex = 0;
+let srsAgain = 0, srsHard = 0, srsGood = 0;
+let cardFlipped = false;
+
+// ══════════════════════════════════════════
+// LOCALSTORAGE HELPERS
+// ══════════════════════════════════════════
+function getWordList() {
+    try { return JSON.parse(localStorage.getItem('dl_wordlist') || '[]'); } catch { return []; }
+}
+function saveWordList(list) {
+    localStorage.setItem('dl_wordlist', JSON.stringify(list));
+    updateWordlistBadge();
+}
+function getSRSData() {
+    try { return JSON.parse(localStorage.getItem('dl_srs') || '{}'); } catch { return {}; }
+}
+function saveSRSData(data) { localStorage.setItem('dl_srs', JSON.stringify(data)); }
+
+function updateWordlistBadge() {
+    const n = getWordList().length;
+    document.getElementById('wordlistBadge').textContent = n;
+    document.getElementById('wordsSavedCount').textContent = n;
+    // update due badge
+    const due = getDueWords().length;
+    const badge = document.getElementById('dueBadge');
+    if (due > 0) { badge.textContent = due; badge.style.display = ''; }
+    else badge.style.display = 'none';
+}
+
+function getDueWords() {
+    const srs = getSRSData();
+    const now = Date.now();
+    return getWordList().filter(w => {
+        const d = srs[w.word];
+        return !d || d.nextReview <= now;
+    });
+}
+
+// ══════════════════════════════════════════
+// TOAST
+// ══════════════════════════════════════════
+let toastTimer;
+function showToast(msg) {
+    const t = document.getElementById('toast');
+    t.textContent = msg;
+    t.classList.add('show');
+    clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => t.classList.remove('show'), 2200);
+}
+
+// ══════════════════════════════════════════
+// TABS
+// ══════════════════════════════════════════
+document.querySelectorAll('.nav-tab').forEach(tab => {
+    tab.addEventListener('click', () => {
+        document.querySelectorAll('.nav-tab').forEach(t => t.classList.remove('active'));
+        document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+        tab.classList.add('active');
+        const panel = document.getElementById('tab-' + tab.dataset.tab);
+        if (panel) panel.classList.add('active');
+        if (tab.dataset.tab === 'wordlist') renderWordlist();
+        if (tab.dataset.tab === 'flashcards') initFlashcards();
+        if (tab.dataset.tab === 'cloze') renderCloze();
+    });
 });
 
-// Save API key
+// ══════════════════════════════════════════
+// API KEY
+// ══════════════════════════════════════════
+window.addEventListener('DOMContentLoaded', () => {
+    const saved = localStorage.getItem('groq_api_key');
+    if (saved) { apiKey = saved; updateApiKeyStatus(true); document.getElementById('apiKeyModal').classList.remove('active'); }
+    updateWordlistBadge();
+});
+
 document.getElementById('saveApiKey').addEventListener('click', () => {
     const key = document.getElementById('apiKeyInput').value.trim();
-    const remember = document.getElementById('rememberKey').checked;
-    
-    if (!key) {
-        alert('Please enter your API key');
-        return;
-    }
-    
+    if (!key) { showToast('Please enter your API key'); return; }
     apiKey = key;
-    
-    if (remember) {
-        localStorage.setItem('groq_api_key', key);
-    }
-    
+    if (document.getElementById('rememberKey').checked) localStorage.setItem('groq_api_key', key);
     updateApiKeyStatus(true);
     document.getElementById('apiKeyModal').classList.remove('active');
 });
 
-// Change API key
 document.getElementById('changeApiKey').addEventListener('click', () => {
     document.getElementById('apiKeyInput').value = apiKey || '';
     document.getElementById('apiKeyModal').classList.add('active');
 });
 
-// Update API key status indicator
 function updateApiKeyStatus(hasKey) {
-    const dot = document.getElementById('statusDot');
-    const text = document.getElementById('statusText');
-    
-    if (hasKey) {
-        dot.classList.add('active');
-        text.textContent = 'API key set';
-    } else {
-        dot.classList.remove('active');
-        text.textContent = 'API key not set';
-    }
+    document.getElementById('statusDot').classList.toggle('active', hasKey);
+    document.getElementById('statusText').textContent = hasKey ? 'Key set' : 'No key';
 }
 
-// Generate new lesson
-document.getElementById('generateBtn').addEventListener('click', async function() {
-    if (!apiKey) {
-        document.getElementById('apiKeyModal').classList.add('active');
-        return;
-    }
-    
+// ══════════════════════════════════════════
+// GENERATE LESSON
+// ══════════════════════════════════════════
+document.getElementById('generateBtn').addEventListener('click', async function () {
+    if (!apiKey) { document.getElementById('apiKeyModal').classList.add('active'); return; }
+
     const btn = this;
     const loading = document.getElementById('loadingState');
     const empty = document.getElementById('emptyState');
     const content = document.getElementById('appContent');
-    
+
     btn.disabled = true;
     loading.classList.add('active');
     empty.style.display = 'none';
     content.style.display = 'none';
-    
+
+    // Animated loading steps
+    const steps = ['step1', 'step2', 'step3'];
+    let stepIdx = 0;
+    document.querySelectorAll('.loading-step').forEach(s => s.className = 'loading-step');
+    const stepTimer = setInterval(() => {
+        if (stepIdx > 0) document.getElementById(steps[stepIdx - 1]).className = 'loading-step done';
+        if (stepIdx < steps.length) { document.getElementById(steps[stepIdx]).className = 'loading-step active'; stepIdx++; }
+    }, 2500);
+
     try {
         const response = await fetch('/api', {
             method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify({
-                api_key: apiKey
-            })
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ api_key: apiKey })
         });
-        
         const result = await response.json();
-        
+
         if (result.success) {
             lessonData = result.data;
             renderLesson();
             content.style.display = 'block';
+            // Switch to lesson tab
+            document.querySelector('[data-tab="lesson"]').click();
         } else {
-            if (result.error.includes('API') || result.error.includes('key')) {
-                alert('Invalid API key. Please check your Groq API key and try again.');
-                document.getElementById('apiKeyModal').classList.add('active');
-            } else {
-                alert('Error generating lesson: ' + result.error);
-            }
+            const err = result.error || 'Unknown error';
+            const isAuth = err.toLowerCase().includes('invalid_api_key') || err.toLowerCase().includes('401');
+            if (isAuth) { showToast('Invalid API key — please check it'); document.getElementById('apiKeyModal').classList.add('active'); }
+            else showToast('Error: ' + err);
             empty.style.display = 'block';
         }
-    } catch (error) {
-        alert('Error: ' + error.message);
+    } catch (e) {
+        showToast('Network error: ' + e.message);
         empty.style.display = 'block';
     } finally {
+        clearInterval(stepTimer);
+        steps.forEach(s => document.getElementById(s).className = 'loading-step');
         loading.classList.remove('active');
         btn.disabled = false;
     }
 });
 
+// ══════════════════════════════════════════
+// RENDER LESSON
+// ══════════════════════════════════════════
 function renderLesson() {
-    quizAnswered = 0;
-    quizCorrect = 0;
-    translationsVisible = true;
-    tooltipsEnabled = false;
-    
+    quizAnswered = 0; quizCorrect = 0;
+    translationsVisible = true; tooltipsEnabled = false;
+    document.getElementById('toggleTranslations').textContent = 'Hide Translations';
+    document.getElementById('toggleTooltips').textContent = 'Word Tooltips';
+
     document.getElementById('articleTitle').textContent = lessonData.title;
     document.getElementById('articleSummary').textContent = lessonData.summary;
     document.getElementById('articleSource').href = lessonData.source_url;
-    
-    const date = new Date(lessonData.generated_at);
-    document.getElementById('articleDate').textContent = date.toLocaleDateString();
-    
+    document.getElementById('articleDate').textContent = new Date(lessonData.generated_at).toLocaleDateString();
     document.getElementById('sentenceCount').textContent = lessonData.content.length;
     document.getElementById('quizCount').textContent = lessonData.quiz.length;
-    updateScore();
-    
+    document.getElementById('scoreCount').textContent = '—';
+
     renderArticle();
     renderVocabulary();
     renderQuiz();
+    updateWordlistBadge();
 }
 
 function renderArticle() {
     const container = document.getElementById('articleContent');
     container.innerHTML = '';
-    
-    lessonData.content.forEach((item, index) => {
+    if (!lessonData) return;
+
+    lessonData.content.forEach(item => {
         const block = document.createElement('div');
         block.className = 'translation-block';
-        
+
         const header = document.createElement('div');
         header.className = 'sentence-header';
-        
-        const number = document.createElement('div');
-        number.className = 'sentence-number';
-        number.textContent = item.sentence_number;
-        
+
+        const num = document.createElement('div');
+        num.className = 'sentence-number';
+        num.textContent = item.sentence_number;
+
         const german = document.createElement('div');
         german.className = 'german-text';
-        
-        const words = item.german_sentence.split(' ');
-        german.innerHTML = words.map(word => {
-            const cleanWord = word.replace(/[.,!?;:]/g, '');
-            const meaning = item.word_meanings?.[cleanWord];
-            
-            if (meaning && tooltipsEnabled) {
-                return `<span class="hover-word" data-translation="${meaning}">${word}</span>`;
-            }
-            return word;
-        }).join(' ');
-        
-        header.appendChild(number);
+        german.innerHTML = buildGermanHTML(item);
+
+        // Sentence action buttons
+        const actions = document.createElement('div');
+        actions.className = 'sentence-actions';
+
+        // 🔊 audio button
+        const audioBtn = document.createElement('button');
+        audioBtn.className = 'btn-icon';
+        audioBtn.title = 'Listen';
+        audioBtn.innerHTML = '🔊';
+        audioBtn.addEventListener('click', () => speakText(item.german_sentence, audioBtn));
+
+        // 🔖 save sentence words button
+        const saveBtn = document.createElement('button');
+        saveBtn.className = 'btn-icon';
+        saveBtn.title = 'Save all words from this sentence';
+        saveBtn.innerHTML = '📌';
+        const wordList = getWordList();
+        const allSaved = Object.keys(item.word_meanings || {}).every(w => wordList.some(x => x.word === w));
+        if (allSaved && Object.keys(item.word_meanings || {}).length > 0) saveBtn.classList.add('saved');
+        saveBtn.addEventListener('click', () => saveSentenceWords(item, saveBtn));
+
+        actions.appendChild(audioBtn);
+        actions.appendChild(saveBtn);
+
+        header.appendChild(num);
         header.appendChild(german);
+        header.appendChild(actions);
         block.appendChild(header);
-        
-        const english = document.createElement('div');
-        english.className = 'english-text' + (translationsVisible ? '' : ' hidden');
-        english.textContent = item.english_translation;
-        block.appendChild(english);
-        
+
+        const en = document.createElement('div');
+        en.className = 'english-text' + (translationsVisible ? '' : ' hidden');
+        en.textContent = item.english_translation;
+        block.appendChild(en);
+
         if (item.grammar_notes) {
-            const grammar = document.createElement('div');
-            grammar.className = 'grammar-note';
-            grammar.textContent = item.grammar_notes;
-            block.appendChild(grammar);
+            const gram = document.createElement('div');
+            gram.className = 'grammar-note';
+            gram.textContent = '📝 ' + item.grammar_notes;
+            block.appendChild(gram);
         }
-        
+
         container.appendChild(block);
     });
 }
 
+function buildGermanHTML(item) {
+    if (!item.word_meanings) return item.german_sentence;
+    const wl = getWordList();
+    return item.german_sentence.split(' ').map(token => {
+        const clean = token.replace(/[.,!?;:"'()]/g, '');
+        const meaning = item.word_meanings[clean];
+        const isSaved = wl.some(x => x.word === clean);
+        if (meaning && tooltipsEnabled) {
+            return `<span class="hover-word${isSaved ? ' saved-word' : ''}" data-translation="${meaning}" data-word="${clean}" data-sentence="${encodeURIComponent(item.english_translation)}">${token}</span>`;
+        }
+        return token;
+    }).join(' ');
+}
+
+function saveSentenceWords(item, btn) {
+    if (!item.word_meanings) return;
+    const wl = getWordList();
+    let added = 0;
+    Object.entries(item.word_meanings).forEach(([word, translation]) => {
+        if (!wl.some(x => x.word === word) && word.length > 1) {
+            wl.push({ word, translation, source: lessonData.title.slice(0, 40), savedAt: Date.now() });
+            added++;
+        }
+    });
+    saveWordList(wl);
+    btn.classList.add('saved');
+    showToast(added > 0 ? `Saved ${added} word${added > 1 ? 's' : ''}` : 'All words already saved');
+    renderArticle();
+}
+
 function renderVocabulary() {
-    if (!lessonData.vocabulary_highlights || lessonData.vocabulary_highlights.length === 0) {
-        return;
-    }
-    
-    document.getElementById('vocabSection').style.display = 'block';
+    const section = document.getElementById('vocabSection');
     const grid = document.getElementById('vocabGrid');
+    if (!lessonData?.vocabulary_highlights?.length) { section.style.display = 'none'; return; }
+    section.style.display = 'block';
     grid.innerHTML = '';
-    
+    const wl = getWordList();
     lessonData.vocabulary_highlights.forEach(item => {
         const card = document.createElement('div');
         card.className = 'vocab-card';
+        const isSaved = wl.some(x => x.word === item.word);
         card.innerHTML = `
             <div class="vocab-word">${item.word}</div>
             <div class="vocab-translation">${item.translation}</div>
             <div class="vocab-example">${item.usage_example}</div>
-        `;
+            <div class="vocab-save-row">
+                <button class="btn-icon ${isSaved ? 'saved' : ''}" title="${isSaved ? 'Saved' : 'Save to word list'}">${isSaved ? '🔖' : '🔖'}</button>
+            </div>`;
+        card.querySelector('.btn-icon').addEventListener('click', function () {
+            const list = getWordList();
+            if (list.some(x => x.word === item.word)) { showToast('Already saved'); return; }
+            list.push({ word: item.word, translation: item.translation, source: lessonData.title.slice(0, 40), savedAt: Date.now() });
+            saveWordList(list);
+            this.classList.add('saved');
+            showToast(`"${item.word}" saved`);
+            updateWordlistBadge();
+        });
         grid.appendChild(card);
     });
 }
@@ -956,101 +963,380 @@ function renderVocabulary() {
 function renderQuiz() {
     const container = document.getElementById('quizContent');
     container.innerHTML = '';
-    
-    lessonData.quiz.forEach((q, index) => {
-        const question = document.createElement('div');
-        question.className = 'quiz-question';
-        
+    if (!lessonData?.quiz) return;
+    lessonData.quiz.forEach((q, i) => {
+        const el = document.createElement('div');
+        el.className = 'quiz-question';
         const header = document.createElement('div');
         header.className = 'question-header';
-        header.innerHTML = `
-            <div class="question-number">${index + 1}</div>
-            <div class="question-text">${q.question}</div>
-        `;
-        question.appendChild(header);
-        
-        q.options.forEach(option => {
+        header.innerHTML = `<div class="question-number">${i + 1}</div><div class="question-text">${q.question}</div>`;
+        el.appendChild(header);
+        q.options.forEach(opt => {
             const btn = document.createElement('button');
             btn.className = 'option-btn';
-            btn.textContent = option;
-            
-            btn.onclick = function() {
-                const buttons = question.querySelectorAll('.option-btn');
-                buttons.forEach(b => {
-                    b.disabled = true;
-                    b.classList.remove('correct', 'wrong');
-                });
-                
-                const isCorrect = option === q.correct_answer;
-                
-                if (isCorrect) {
-                    btn.classList.add('correct');
-                    quizCorrect++;
-                } else {
-                    btn.classList.add('wrong');
-                    buttons.forEach(b => {
-                        if (b.textContent === q.correct_answer) {
-                            b.classList.add('correct');
-                        }
-                    });
-                }
-                
+            btn.textContent = opt;
+            btn.onclick = function () {
+                el.querySelectorAll('.option-btn').forEach(b => { b.disabled = true; });
+                const correct = opt === q.correct_answer;
+                btn.classList.add(correct ? 'correct' : 'wrong');
+                if (!correct) el.querySelectorAll('.option-btn').forEach(b => { if (b.textContent === q.correct_answer) b.classList.add('correct'); });
+                if (correct) quizCorrect++;
                 quizAnswered++;
                 updateScore();
-                
-                if (q.explanation) {
-                    const exp = question.querySelector('.explanation');
-                    exp.classList.add('show');
-                }
+                const exp = el.querySelector('.explanation');
+                if (exp) exp.classList.add('show');
             };
-            
-            question.appendChild(btn);
+            el.appendChild(btn);
         });
-        
         if (q.explanation) {
             const exp = document.createElement('div');
             exp.className = 'explanation';
             exp.innerHTML = `<strong>Explanation:</strong> ${q.explanation}`;
-            question.appendChild(exp);
+            el.appendChild(exp);
         }
-        
-        container.appendChild(question);
+        container.appendChild(el);
     });
 }
 
 function updateScore() {
-    const scoreDisplay = `${quizCorrect}/${lessonData.quiz.length}`;
-    document.getElementById('scoreCount').textContent = scoreDisplay;
-    document.getElementById('scoreDisplay').textContent = scoreDisplay;
-    
-    if (quizAnswered === lessonData.quiz.length) {
-        const percentage = (quizCorrect / lessonData.quiz.length) * 100;
-        let message = '';
-        
-        if (percentage >= 90) message = "Ausgezeichnet! Excellent! 🎉";
-        else if (percentage >= 70) message = "Sehr gut! Very good! 👏";
-        else if (percentage >= 50) message = "Gut gemacht! Good job! 👍";
-        else message = "Keep practicing! 💪";
-        
-        document.getElementById('scoreMessage').textContent = message;
+    if (!lessonData) return;
+    const total = lessonData.quiz.length;
+    const display = `${quizCorrect}/${total}`;
+    document.getElementById('scoreCount').textContent = display;
+    document.getElementById('scoreDisplay').textContent = display;
+    if (quizAnswered === total) {
+        const pct = quizCorrect / total * 100;
+        document.getElementById('scoreMessage').textContent =
+            pct >= 90 ? 'Ausgezeichnet! Excellent! 🎉' :
+            pct >= 70 ? 'Sehr gut! Very good! 👏' :
+            pct >= 50 ? 'Gut gemacht! Good job! 👍' : 'Keep practicing! 💪';
         document.getElementById('quizScore').classList.add('show');
     }
 }
 
-document.getElementById('toggleTranslations').addEventListener('click', function() {
+// ══════════════════════════════════════════
+// AUDIO (Web Speech API)
+// ══════════════════════════════════════════
+function speakText(text, btn) {
+    if (!('speechSynthesis' in window)) { showToast('Your browser does not support text-to-speech'); return; }
+    window.speechSynthesis.cancel();
+    const utt = new SpeechSynthesisUtterance(text);
+    utt.lang = 'de-DE'; utt.rate = 0.85;
+    // Try to find a German voice
+    const voices = window.speechSynthesis.getVoices();
+    const deVoice = voices.find(v => v.lang.startsWith('de'));
+    if (deVoice) utt.voice = deVoice;
+    if (btn) {
+        btn.classList.add('playing');
+        utt.onend = () => btn.classList.remove('playing');
+        utt.onerror = () => btn.classList.remove('playing');
+    }
+    window.speechSynthesis.speak(utt);
+}
+
+// Toggle audio on/off auto-play mode
+document.getElementById('toggleAudio').addEventListener('click', function () {
+    audioEnabled = !audioEnabled;
+    this.textContent = audioEnabled ? '🔊 Audio On' : '🔊 Audio Off';
+    showToast(audioEnabled ? 'Auto-audio enabled — hover a sentence to play' : 'Auto-audio off');
+});
+
+// Controls
+document.getElementById('toggleTranslations').addEventListener('click', function () {
     translationsVisible = !translationsVisible;
-    document.querySelectorAll('.english-text').forEach(el => {
-        el.classList.toggle('hidden', !translationsVisible);
-    });
+    document.querySelectorAll('.english-text').forEach(el => el.classList.toggle('hidden', !translationsVisible));
     this.textContent = translationsVisible ? 'Hide Translations' : 'Show Translations';
 });
 
-document.getElementById('toggleTooltips').addEventListener('click', function() {
+document.getElementById('toggleTooltips').addEventListener('click', function () {
     tooltipsEnabled = !tooltipsEnabled;
-    this.textContent = tooltipsEnabled ? 'Disable Word Tooltips' : 'Enable Word Tooltips';
+    this.textContent = tooltipsEnabled ? 'Tooltips On' : 'Word Tooltips';
     renderArticle();
 });
-</script>
 
+// ══════════════════════════════════════════
+// CLOZE (FILL-IN-THE-BLANK)
+// ══════════════════════════════════════════
+function renderCloze() {
+    const empty = document.getElementById('clozeEmpty');
+    const content = document.getElementById('clozeContent');
+    if (!lessonData) { empty.style.display = 'block'; content.style.display = 'none'; return; }
+    empty.style.display = 'none';
+    content.style.display = 'block';
+    buildClozeBlocks();
+}
+
+function buildClozeBlocks() {
+    const container = document.getElementById('clozeBlocks');
+    container.innerHTML = '';
+    let totalBlanks = 0;
+
+    lessonData.content.forEach(item => {
+        const block = document.createElement('div');
+        block.className = 'translation-block';
+
+        const header = document.createElement('div');
+        header.className = 'sentence-header';
+        const num = document.createElement('div');
+        num.className = 'sentence-number';
+        num.textContent = item.sentence_number;
+
+        const words = item.german_sentence.split(' ');
+        const meanings = item.word_meanings || {};
+        // blank ~30% of words that have meanings
+        const blankable = words.map((w, i) => {
+            const clean = w.replace(/[.,!?;:"'()]/g, '');
+            return meanings[clean] ? i : -1;
+        }).filter(i => i >= 0);
+        const toBlank = new Set();
+        blankable.forEach((i, pos) => { if (pos % 3 === 1) toBlank.add(i); }); // every 3rd meaningful word
+        if (toBlank.size === 0 && blankable.length > 0) toBlank.add(blankable[0]); // at least one
+
+        const textEl = document.createElement('div');
+        textEl.className = 'german-text';
+        textEl.style.lineHeight = '2.2';
+
+        words.forEach((w, i) => {
+            const clean = w.replace(/[.,!?;:"'()]/g, '');
+            const punct = w.slice(clean.length);
+            if (toBlank.has(i)) {
+                totalBlanks++;
+                const inp = document.createElement('input');
+                inp.type = 'text'; inp.className = 'cloze-input';
+                inp.dataset.answer = clean; inp.dataset.punct = punct;
+                inp.style.width = Math.max(clean.length + 1, 5) + 'ch';
+                inp.placeholder = '___';
+                inp.addEventListener('keydown', e => { if (e.key === 'Enter') checkSingleCloze(inp); });
+                textEl.appendChild(inp);
+                if (punct) textEl.appendChild(document.createTextNode(punct));
+            } else {
+                textEl.appendChild(document.createTextNode(w + ' '));
+            }
+        });
+
+        header.appendChild(num); header.appendChild(textEl);
+        block.appendChild(header);
+
+        // show translation below
+        const en = document.createElement('div');
+        en.className = 'english-text';
+        en.textContent = item.english_translation;
+        block.appendChild(en);
+        container.appendChild(block);
+    });
+
+    document.getElementById('clozeTotal').textContent = totalBlanks;
+    document.getElementById('clozeCorrect').textContent = '0';
+}
+
+function checkSingleCloze(inp) {
+    const answer = inp.dataset.answer.toLowerCase();
+    const val = inp.value.trim().toLowerCase();
+    if (!val) return;
+    inp.disabled = true;
+    if (val === answer) {
+        inp.classList.add('correct');
+    } else {
+        inp.classList.add('wrong');
+        // Show correct answer next to it
+        const hint = document.createElement('span');
+        hint.className = 'cloze-answer';
+        hint.textContent = ' ' + inp.dataset.answer + inp.dataset.punct;
+        inp.parentNode.insertBefore(hint, inp.nextSibling);
+    }
+    updateClozeScore();
+}
+
+document.getElementById('clozeCheck').addEventListener('click', () => {
+    document.querySelectorAll('.cloze-input:not(:disabled)').forEach(checkSingleCloze);
+});
+
+document.getElementById('clozeReset').addEventListener('click', buildClozeBlocks);
+
+function updateClozeScore() {
+    const correct = document.querySelectorAll('.cloze-input.correct').length;
+    document.getElementById('clozeCorrect').textContent = correct;
+}
+
+// ══════════════════════════════════════════
+// WORD LIST
+// ══════════════════════════════════════════
+let allTranslationsShown = true;
+
+function renderWordlist() {
+    const wl = getWordList();
+    const empty = document.getElementById('wordlistEmpty');
+    const content = document.getElementById('wordlistContent');
+    const tbody = document.getElementById('wordlistBody');
+
+    if (wl.length === 0) { empty.style.display = 'block'; content.style.display = 'none'; return; }
+    empty.style.display = 'none'; content.style.display = 'block';
+
+    tbody.innerHTML = '';
+    wl.forEach((entry, idx) => {
+        const tr = document.createElement('tr');
+        tr.innerHTML = `
+            <td><span class="word-german">${entry.word}</span>
+                <button class="btn-icon" title="Listen" onclick="speakText('${entry.word.replace(/'/g,"\\'")}', this)" style="margin-left:6px;">🔊</button>
+            </td>
+            <td><span class="word-translation ${allTranslationsShown ? '' : 'hidden-translation'}"
+                      title="Click to reveal" onclick="this.classList.remove('hidden-translation')">${entry.translation}</span></td>
+            <td><span class="word-source">${entry.source || '—'}</span></td>
+            <td><div class="word-actions">
+                <button class="btn-icon" title="Remove" data-idx="${idx}">✕</button>
+            </div></td>`;
+        tr.querySelector('[data-idx]').addEventListener('click', () => removeWord(idx));
+        tbody.appendChild(tr);
+    });
+}
+
+function removeWord(idx) {
+    const wl = getWordList();
+    wl.splice(idx, 1);
+    saveWordList(wl);
+    renderWordlist();
+    showToast('Word removed');
+}
+
+document.getElementById('toggleAllTranslations').addEventListener('click', function () {
+    allTranslationsShown = !allTranslationsShown;
+    this.textContent = allTranslationsShown ? 'Hide All Translations' : 'Show All Translations';
+    document.querySelectorAll('.word-translation').forEach(el => {
+        el.classList.toggle('hidden-translation', !allTranslationsShown);
+    });
+});
+
+document.getElementById('clearWordlist').addEventListener('click', () => {
+    if (!confirm('Clear your entire word list?')) return;
+    saveWordList([]);
+    renderWordlist();
+    showToast('Word list cleared');
+});
+
+document.getElementById('studyFlashcards').addEventListener('click', () => {
+    document.querySelector('[data-tab="flashcards"]').click();
+});
+
+// ══════════════════════════════════════════
+// FLASHCARDS + SRS
+// ══════════════════════════════════════════
+// SM-2 simplified: interval multiplied by ease factor
+function getSRSInterval(word, rating) {
+    const srs = getSRSData();
+    const d = srs[word] || { interval: 0, ef: 2.5, reps: 0 };
+    let { interval, ef, reps } = d;
+
+    if (rating === 0) { interval = 1; reps = 0; }          // Again → 1 min
+    else if (rating === 1) { interval = Math.max(1, interval); ef = Math.max(1.3, ef - 0.15); reps++; }
+    else { // Good
+        if (reps === 0) interval = 1;
+        else if (reps === 1) interval = 6;
+        else interval = Math.round(interval * ef);
+        ef = Math.min(2.5, ef + 0.1);
+        reps++;
+    }
+
+    return { interval, ef, reps, nextReview: Date.now() + interval * 60 * 1000 };
+}
+
+function initFlashcards() {
+    const wl = getWordList();
+    if (wl.length === 0) {
+        document.getElementById('flashcardEmpty').style.display = 'block';
+        document.getElementById('flashcardContent').style.display = 'none';
+        document.getElementById('flashcardDone').style.display = 'none';
+        return;
+    }
+
+    // Build queue from due words (or all if none due)
+    srsQueue = getDueWords();
+    if (srsQueue.length === 0) srsQueue = [...wl]; // if all reviewed, allow re-study
+    shuffleArray(srsQueue);
+    srsIndex = 0; srsAgain = 0; srsHard = 0; srsGood = 0;
+    cardFlipped = false;
+
+    document.getElementById('flashcardEmpty').style.display = 'none';
+    document.getElementById('flashcardContent').style.display = 'block';
+    document.getElementById('flashcardDone').style.display = 'none';
+
+    document.getElementById('flashcardDeckInfo').textContent =
+        `${srsQueue.length} card${srsQueue.length !== 1 ? 's' : ''} due`;
+
+    showFlashcard(srsIndex);
+}
+
+function showFlashcard(idx) {
+    if (idx >= srsQueue.length) { showSRSDone(); return; }
+    const entry = srsQueue[idx];
+    cardFlipped = false;
+
+    const card = document.getElementById('flashcard');
+    card.classList.remove('flipped');
+
+    document.getElementById('fcWord').textContent = entry.word;
+    document.getElementById('fcWordBack').textContent = entry.word;
+    document.getElementById('fcTranslation').textContent = entry.translation;
+    document.getElementById('fcExample').textContent = entry.source ? `From: ${entry.source}` : '';
+
+    document.getElementById('srsButtons').style.display = 'none';
+    document.getElementById('flashcardProgress').textContent = `${idx + 1} / ${srsQueue.length}`;
+}
+
+document.getElementById('flashcard').addEventListener('click', function () {
+    if (cardFlipped) return;
+    this.classList.add('flipped');
+    cardFlipped = true;
+    document.getElementById('srsButtons').style.display = 'block';
+});
+
+document.querySelectorAll('.srs-btn').forEach(btn => {
+    btn.addEventListener('click', function () {
+        const rating = parseInt(this.dataset.rating);
+        const word = srsQueue[srsIndex].word;
+
+        const updated = getSRSInterval(word, rating);
+        const srs = getSRSData();
+        srs[word] = updated;
+        saveSRSData(srs);
+
+        if (rating === 0) srsAgain++;
+        else if (rating === 1) srsHard++;
+        else srsGood++;
+
+        srsIndex++;
+        cardFlipped = false;
+        showFlashcard(srsIndex);
+        updateWordlistBadge();
+    });
+});
+
+document.getElementById('skipCard').addEventListener('click', () => {
+    srsIndex++;
+    cardFlipped = false;
+    showFlashcard(srsIndex);
+});
+
+document.getElementById('restartSession').addEventListener('click', initFlashcards);
+
+function showSRSDone() {
+    document.getElementById('flashcardContent').style.display = 'none';
+    document.getElementById('flashcardDone').style.display = 'block';
+    document.getElementById('srsAgainCount').textContent = srsAgain;
+    document.getElementById('srsHardCount').textContent = srsHard;
+    document.getElementById('srsGoodCount').textContent = srsGood;
+    updateWordlistBadge();
+}
+
+function shuffleArray(arr) {
+    for (let i = arr.length - 1; i > 0; i--) {
+        const j = Math.floor(Math.random() * (i + 1));
+        [arr[i], arr[j]] = [arr[j], arr[i]];
+    }
+    return arr;
+}
+
+// Init badges on load
+updateWordlistBadge();
+</script>
 </body>
 </html>
