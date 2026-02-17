@@ -206,6 +206,29 @@ body {
 
 /* audio button pulse while playing */
 .btn-icon.playing { color: var(--accent); animation: pulse 1s ease-in-out infinite; }
+
+/* clickable words */
+.word-token {
+    cursor: pointer;
+    border-bottom: 1px dotted var(--border);
+    padding: 0 1px;
+    border-radius: 2px;
+    transition: all 0.15s;
+}
+.word-token:hover { border-bottom-color: var(--accent); color: var(--accent); }
+.word-token.word-saved { border-bottom-color: var(--warn); color: var(--warn); }
+.word-token.word-saved:hover { border-bottom-color: var(--warn); }
+
+/* sentence entry type badge */
+.entry-type {
+    display: inline-block; font-size: 0.68rem; font-weight: 600;
+    padding: 0.1rem 0.35rem; border-radius: 3px; text-transform: uppercase;
+    letter-spacing: 0.4px; vertical-align: middle;
+}
+.entry-type.word { background: rgba(59,130,246,0.15); color: var(--accent); }
+.entry-type.sentence { background: rgba(245,158,11,0.15); color: var(--warn); }
+.word-sentence-de { font-style: italic; font-size: 0.85rem; }
+.word-sentence-en { font-size: 0.78rem; color: var(--text-subtle); }
 @keyframes pulse { 0%,100% { opacity: 1; } 50% { opacity: 0.5; } }
 
 /* word tooltips */
@@ -853,6 +876,13 @@ function renderArticle() {
         const german = document.createElement('div');
         german.className = 'german-text';
         german.innerHTML = buildGermanHTML(item);
+        german.addEventListener('click', e => {
+            const span = e.target.closest('.word-token');
+            if (!span) return;
+            const word = span.dataset.word;
+            const meaning = span.dataset.meaning;
+            if (word && meaning) saveIndividualWord(word, meaning, lessonData.title);
+        });
 
         // Sentence action buttons
         const actions = document.createElement('div');
@@ -868,11 +898,11 @@ function renderArticle() {
         // 🔖 save sentence words button
         const saveBtn = document.createElement('button');
         saveBtn.className = 'btn-icon';
-        saveBtn.title = 'Save all words from this sentence';
-        saveBtn.innerHTML = '📌';
+        saveBtn.title = 'Save full sentence';
+        saveBtn.innerHTML = '💾';
         const wordList = getWordList();
-        const allSaved = Object.keys(item.word_meanings || {}).every(w => wordList.some(x => x.word === w));
-        if (allSaved && Object.keys(item.word_meanings || {}).length > 0) saveBtn.classList.add('saved');
+        const sentAlreadySaved = wordList.some(x => x.type === 'sentence' && x.word === item.german_sentence.trim());
+        if (sentAlreadySaved) saveBtn.classList.add('saved');
         saveBtn.addEventListener('click', () => saveSentenceWords(item, saveBtn));
 
         actions.appendChild(audioBtn);
@@ -905,27 +935,44 @@ function buildGermanHTML(item) {
     return item.german_sentence.split(' ').map(token => {
         const clean = token.replace(/[.,!?;:"'()]/g, '');
         const meaning = item.word_meanings[clean];
-        const isSaved = wl.some(x => x.word === clean);
-        if (meaning && tooltipsEnabled) {
-            return `<span class="hover-word${isSaved ? ' saved-word' : ''}" data-translation="${meaning}" data-word="${clean}" data-sentence="${encodeURIComponent(item.english_translation)}">${token}</span>`;
-        }
-        return token;
+        if (!meaning || clean.length < 2) return token;
+        const isSaved = wl.some(x => x.type !== 'sentence' && x.word === clean);
+        const tooltipAttr = tooltipsEnabled ? `data-translation="${meaning}"` : '';
+        const classes = ['word-token', isSaved ? 'word-saved' : '', tooltipsEnabled ? 'hover-word' : ''].filter(Boolean).join(' ');
+        return `<span class="${classes}" ${tooltipAttr} data-word="${clean}" data-meaning="${meaning}" title="Save word">${token}</span>`;
     }).join(' ');
 }
 
 function saveSentenceWords(item, btn) {
-    if (!item.word_meanings) return;
     const wl = getWordList();
-    let added = 0;
-    Object.entries(item.word_meanings).forEach(([word, translation]) => {
-        if (!wl.some(x => x.word === word) && word.length > 1) {
-            wl.push({ word, translation, source: lessonData.title.slice(0, 40), savedAt: Date.now() });
-            added++;
-        }
+    // Save as a full sentence entry
+    const sentenceKey = item.german_sentence.trim();
+    if (wl.some(x => x.type === 'sentence' && x.word === sentenceKey)) {
+        showToast('Sentence already saved');
+        return;
+    }
+    wl.push({
+        type: 'sentence',
+        word: sentenceKey,
+        translation: item.english_translation,
+        source: lessonData.title.slice(0, 40),
+        savedAt: Date.now()
     });
     saveWordList(wl);
     btn.classList.add('saved');
-    showToast(added > 0 ? `Saved ${added} word${added > 1 ? 's' : ''}` : 'All words already saved');
+    showToast('Sentence saved');
+    renderArticle();
+}
+
+function saveIndividualWord(word, meaning, sourceTitle) {
+    const wl = getWordList();
+    if (wl.some(x => x.type !== 'sentence' && x.word === word)) {
+        showToast(`"${word}" already saved`);
+        return;
+    }
+    wl.push({ type: 'word', word, translation: meaning, source: sourceTitle.slice(0, 40), savedAt: Date.now() });
+    saveWordList(wl);
+    showToast(`"${word}" saved`);
     renderArticle();
 }
 
@@ -1175,12 +1222,19 @@ function renderWordlist() {
     tbody.innerHTML = '';
     wl.forEach((entry, idx) => {
         const tr = document.createElement('tr');
+        const isSentence = entry.type === 'sentence';
+        const displayWord = isSentence
+            ? `<span class="word-sentence-de">${entry.word.length > 60 ? entry.word.slice(0,60)+'…' : entry.word}</span>`
+            : `<span class="word-german">${entry.word}</span>`;
+        const speakText_escaped = entry.word.replace(/'/g, "\\'").replace(/"/g, '\\"').slice(0, 120);
         tr.innerHTML = `
-            <td><span class="word-german">${entry.word}</span>
-                <button class="btn-icon" title="Listen" onclick="speakText('${entry.word.replace(/'/g,"\\'")}', this)" style="margin-left:6px;">🔊</button>
+            <td>
+                <span class="entry-type ${isSentence ? 'sentence' : 'word'}">${isSentence ? 'sentence' : 'word'}</span>
+                ${displayWord}
+                <button class="btn-icon" title="Listen" onclick="speakText('${speakText_escaped}', this)" style="margin-left:4px;">🔊</button>
             </td>
             <td><span class="word-translation ${allTranslationsShown ? '' : 'hidden-translation'}"
-                      title="Click to reveal" onclick="this.classList.remove('hidden-translation')">${entry.translation}</span></td>
+                      title="Click to reveal" onclick="this.classList.remove('hidden-translation')">${isSentence ? (entry.translation.length > 70 ? entry.translation.slice(0,70)+'…' : entry.translation) : entry.translation}</span></td>
             <td><span class="word-source">${entry.source || '—'}</span></td>
             <td><div class="word-actions">
                 <button class="btn-icon" title="Remove" data-idx="${idx}">✕</button>
@@ -1273,10 +1327,20 @@ function showFlashcard(idx) {
     const card = document.getElementById('flashcard');
     card.classList.remove('flipped');
 
-    document.getElementById('fcWord').textContent = entry.word;
-    document.getElementById('fcWordBack').textContent = entry.word;
-    document.getElementById('fcTranslation').textContent = entry.translation;
+    const isSentenceCard = entry.type === 'sentence';
+    const frontText = isSentenceCard
+        ? (entry.word.length > 80 ? entry.word.slice(0, 80) + '…' : entry.word)
+        : entry.word;
+    document.getElementById('fcWord').textContent = frontText;
+    document.getElementById('fcWordBack').textContent = frontText;
+    document.getElementById('fcTranslation').textContent = entry.translation.length > 100
+        ? entry.translation.slice(0, 100) + '…'
+        : entry.translation;
     document.getElementById('fcExample').textContent = entry.source ? `From: ${entry.source}` : '';
+    // Resize font for sentences
+    document.getElementById('fcWord').style.fontSize = isSentenceCard ? '1.1rem' : '2rem';
+    document.getElementById('fcWordBack').style.fontSize = isSentenceCard ? '1.1rem' : '2rem';
+    document.getElementById('flashcard').dataset.type = isSentenceCard ? 'sentence' : 'word';
 
     document.getElementById('srsButtons').style.display = 'none';
     document.getElementById('flashcardProgress').textContent = `${idx + 1} / ${srsQueue.length}`;
