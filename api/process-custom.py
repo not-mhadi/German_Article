@@ -6,168 +6,273 @@ import re
 import base64
 import datetime
 
-# ── TEXT EXTRACTION ────────────────────────────────────────────────
+# ── PDF EXTRACTION ─────────────────────────────────────────────────
 
 def extract_text_from_pdf(pdf_b64):
-    """Extract text from base64-encoded PDF using PyMuPDF."""
     try:
-        import fitz  # PyMuPDF
+        import fitz
     except ImportError:
-        raise Exception("PDF support not available. Please install pymupdf.")
+        raise Exception("PDF support unavailable — pymupdf not installed.")
 
     pdf_bytes = base64.b64decode(pdf_b64)
     doc = fitz.open(stream=pdf_bytes, filetype="pdf")
-
     pages = []
     for page in doc:
         text = page.get_text("text")
-        # Clean up the text
-        text = re.sub(r'\n{3,}', '\n\n', text)
-        text = text.strip()
+        text = re.sub(r'\n{3,}', '\n\n', text).strip()
         if len(text) > 50:
             pages.append(text)
     doc.close()
 
     if not pages:
-        raise Exception("Could not extract any text from the PDF. Make sure it contains selectable text (not a scanned image).")
+        raise Exception("No selectable text found in PDF. It may be a scanned image.")
 
     full_text = "\n\n".join(pages)
-    # Limit to ~8000 chars to stay within token limits
     if len(full_text) > 8000:
-        full_text = full_text[:8000] + "\n\n[Text truncated for processing...]"
-
+        full_text = full_text[:8000] + "\n\n[Truncated...]"
     return full_text
 
-def scrape_url(url):
-    """Scrape text content from any URL using smart extraction."""
-    if not url.startswith(('http://', 'https://')):
-        url = 'https://' + url
+# ── URL SCRAPING — MULTI-STRATEGY ─────────────────────────────────
 
-    headers = {
-        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36',
-        'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
-        'Accept-Language': 'de,en;q=0.9',
-    }
+HEADERS = {
+    'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/120.0.0.0 Safari/537.36',
+    'Accept': 'text/html,application/xhtml+xml,application/xml;q=0.9,*/*;q=0.8',
+    'Accept-Language': 'de-DE,de;q=0.9,en;q=0.8',
+    'Accept-Encoding': 'gzip, deflate, br',
+    'DNT': '1',
+    'Cache-Control': 'max-age=0',
+}
 
-    response = requests.get(url, headers=headers, timeout=15)
-    response.raise_for_status()
-    soup = BeautifulSoup(response.text, 'html.parser')
+def try_jina_reader(url):
+    """Use Jina AI's free r.jina.ai reader — handles JS-rendered pages."""
+    jina_url = f"https://r.jina.ai/{url}"
+    r = requests.get(jina_url, headers={'Accept': 'text/plain', 'User-Agent': 'Mozilla/5.0'}, timeout=20)
+    if r.status_code != 200:
+        return None, None
+    text = r.text.strip()
+    if len(text) < 200:
+        return None, None
 
-    # Remove noise elements
-    for tag in soup.find_all(['script', 'style', 'nav', 'footer', 'header',
-                               'aside', 'form', 'iframe', 'noscript', 'ads',
-                               'advertisement', 'cookie', 'popup']):
+    # Jina returns markdown-like text — extract title from first # line
+    lines = text.split('\n')
+    title = ''
+    content_lines = []
+    for line in lines:
+        stripped = line.strip()
+        if not title and stripped.startswith('# '):
+            title = stripped[2:].strip()
+        elif stripped and not stripped.startswith('```') and not stripped.startswith('!['):
+            # Skip image refs and code blocks, keep prose
+            if not re.match(r'^(https?://|www\.)', stripped):
+                content_lines.append(stripped)
+
+    content = '\n'.join(content_lines)
+    # Remove markdown formatting
+    content = re.sub(r'\[([^\]]+)\]\([^)]+\)', r'\1', content)   # links
+    content = re.sub(r'#{1,6}\s+', '', content)                   # headers
+    content = re.sub(r'\*{1,2}([^*]+)\*{1,2}', r'\1', content)   # bold/italic
+    content = re.sub(r'\n{3,}', '\n\n', content).strip()
+
+    return title or 'Article', content
+
+def try_direct_scrape(url):
+    """Direct HTML fetch with broad extraction strategy."""
+    r = requests.get(url, headers=HEADERS, timeout=15)
+    r.raise_for_status()
+
+    # Some sites return JSON with content embedded
+    ct = r.headers.get('Content-Type', '')
+    if 'json' in ct:
+        data = r.json()
+        text = json.dumps(data)
+        return 'Article', text[:6000]
+
+    soup = BeautifulSoup(r.text, 'html.parser')
+
+    # ── Strategy 1: JSON-LD structured data (always rendered server-side) ──
+    for script in soup.find_all('script', type='application/ld+json'):
+        try:
+            data = json.loads(script.string or '')
+            # Handle @graph arrays
+            items = data.get('@graph', [data]) if isinstance(data, dict) else data
+            if isinstance(items, dict):
+                items = [items]
+            for item in items:
+                if item.get('@type') in ('Article', 'NewsArticle', 'WebPage', 'BlogPosting'):
+                    body = item.get('articleBody') or item.get('description') or ''
+                    headline = item.get('headline') or item.get('name') or ''
+                    if len(body) > 200:
+                        return headline, body[:8000]
+        except Exception:
+            pass
+
+    # ── Strategy 2: OpenGraph / meta tags for short content ──
+    og_title = soup.find('meta', property='og:title')
+    og_desc = soup.find('meta', property='og:description')
+
+    # ── Strategy 3: Remove noise, find biggest text block ──
+    for tag in soup.find_all(['script', 'style', 'nav', 'footer', 'head',
+                               'aside', 'form', 'iframe', 'noscript']):
         tag.decompose()
-    for tag in soup.find_all(class_=re.compile(r'(nav|menu|footer|header|sidebar|ad|cookie|popup|banner|social)', re.I)):
+    for tag in soup.find_all(class_=re.compile(
+            r'(nav|menu|footer|header|sidebar|cookie|popup|banner|social|share|related|comment|ad-|widget|teaser(?!.*text))',
+            re.I)):
         tag.decompose()
 
-    # Try known article selectors first
-    article_selectors = [
-        'article',
-        '[role="main"]',
-        'main',
-        '.article-body', '.article-content', '.post-content',
-        '.entry-content', '.story-body', '.content-body',
-        '#article-body', '#content', '#main-content',
+    # Broad selector list including common German news site patterns
+    selectors = [
+        # Generic semantic
+        'article', '[role="main"]', 'main',
+        # Common class patterns
+        '.article-body', '.article-content', '.article__body', '.article__content',
+        '.article__text', '.article-text',
+        '.post-content', '.post-body', '.entry-content',
+        '.story-body', '.story-content',
+        '.content-body', '.page-content',
+        '.text-content', '.main-content',
+        # Deutschlandfunk / ARD patterns
+        '.b-content-main', '.articleText', '.article-long-text',
+        '[class*="ArticleBody"]', '[class*="article-body"]',
+        '[class*="articleBody"]', '[class*="ArticleText"]',
+        '[class*="content__text"]', '[class*="contentText"]',
+        # Generic IDs
+        '#article-body', '#content', '#main-content', '#main',
+        # Data attributes
+        '[data-module="articleBody"]', '[data-component="article-body"]',
     ]
-    content = None
-    for sel in article_selectors:
-        el = soup.select_one(sel)
-        if el and len(el.get_text(strip=True)) > 300:
-            content = el
-            break
 
-    # Fallback: find the div/section with the most paragraph text
-    if not content:
-        candidates = []
-        for el in soup.find_all(['div', 'section', 'main']):
+    content_el = None
+    for sel in selectors:
+        try:
+            el = soup.select_one(sel)
+            if el and len(el.get_text(strip=True)) > 200:
+                content_el = el
+                break
+        except Exception:
+            continue
+
+    # ── Strategy 4: Largest paragraph cluster ──
+    if not content_el:
+        best_score = 0
+        for el in soup.find_all(['div', 'section', 'main', 'article']):
             paras = el.find_all('p')
-            text = ' '.join(p.get_text(strip=True) for p in paras)
-            if len(text) > 200:
-                candidates.append((len(text), el))
-        if candidates:
-            candidates.sort(key=lambda x: x[0], reverse=True)
-            content = candidates[0][1]
+            text = ' '.join(p.get_text(strip=True) for p in paras if len(p.get_text(strip=True)) > 20)
+            score = len(text)
+            if score > best_score:
+                best_score = score
+                content_el = el
 
-    if not content:
-        raise Exception("Could not find readable content on this page. Try a different URL.")
+    if not content_el or len(content_el.get_text(strip=True)) < 150:
+        return None, None
 
     # Extract clean paragraphs
     paras = []
-    for p in content.find_all(['p', 'h1', 'h2', 'h3']):
+    for p in content_el.find_all(['p', 'h1', 'h2', 'h3', 'li']):
         text = p.get_text(separator=' ', strip=True)
         text = re.sub(r'\s+', ' ', text).strip()
-        if len(text) > 30:
+        if len(text) > 25:
             paras.append(text)
 
-    if not paras:
-        # Fallback to all text
-        raw = content.get_text(separator='\n', strip=True)
-        paras = [line.strip() for line in raw.split('\n') if len(line.strip()) > 30]
+    # Deduplicate adjacent duplicates
+    seen = set()
+    unique = []
+    for p in paras:
+        key = p[:60]
+        if key not in seen:
+            seen.add(key)
+            unique.append(p)
 
-    if not paras:
-        raise Exception("No readable text found at this URL.")
+    if not unique:
+        return None, None
 
-    # Get title
-    title = ''
-    if soup.find('h1'):
-        title = soup.find('h1').get_text(strip=True)
-    elif soup.find('title'):
-        title = soup.find('title').get_text(strip=True)
-    title = title or 'Untitled'
+    title_tag = soup.find('h1') or (og_title and og_title.get('content')) or soup.find('title')
+    if hasattr(title_tag, 'get_text'):
+        title = title_tag.get_text(strip=True)
+    elif isinstance(title_tag, str):
+        title = title_tag
+    else:
+        title = 'Article'
 
-    full_text = '\n\n'.join(paras)
-    if len(full_text) > 8000:
-        full_text = full_text[:8000] + "\n\n[Content truncated for processing...]"
+    content = '\n\n'.join(unique)
+    if len(content) > 8000:
+        content = content[:8000] + "\n\n[Truncated...]"
 
-    return title, full_text
+    return title, content
+
+def scrape_url(url):
+    """Try multiple strategies, use whatever works first."""
+    if not url.startswith(('http://', 'https://')):
+        url = 'https://' + url
+
+    errors = []
+
+    # Strategy A: Direct scrape (fastest, works for most sites)
+    try:
+        title, content = try_direct_scrape(url)
+        if title and content and len(content) > 150:
+            return title, content
+        errors.append("Direct scrape: insufficient content")
+    except Exception as e:
+        errors.append(f"Direct scrape: {str(e)[:80]}")
+
+    # Strategy B: Jina reader (handles JS-rendered / paywalled sites)
+    try:
+        title, content = try_jina_reader(url)
+        if title and content and len(content) > 150:
+            return title, content
+        errors.append("Jina reader: insufficient content")
+    except Exception as e:
+        errors.append(f"Jina reader: {str(e)[:80]}")
+
+    raise Exception(
+        f"Could not extract readable content from this URL.\n"
+        f"The site may require JavaScript or block scrapers.\n"
+        f"Try copying the article text and using PDF upload instead.\n"
+        f"Details: {' | '.join(errors)}"
+    )
 
 # ── AI LESSON GENERATION ───────────────────────────────────────────
 
-def generate_ai_lesson(title, content, api_key, source_lang='de'):
-    """Generate lesson. source_lang: 'de' for German content, 'auto' to detect."""
+def generate_ai_lesson(title, content, api_key):
     url = "https://api.groq.com/openai/v1/chat/completions"
-    headers = {
-        "Authorization": f"Bearer {api_key}",
-        "Content-Type": "application/json"
-    }
+    headers = {"Authorization": f"Bearer {api_key}", "Content-Type": "application/json"}
 
     system_prompt = """You are an expert German language teacher creating interactive learning materials.
+
 Process the provided text into a structured German learning lesson.
+If the text is not in German, translate it to German first, then create the lesson.
 
-If the text is not in German, translate it to German first, then create the lesson from the German version.
-
-Output ONLY valid JSON in this exact structure:
+Output ONLY valid JSON:
 {
   "title": "English translation of the title",
-  "summary": "Brief 2-3 sentence summary in English",
+  "summary": "2-3 sentence English summary",
   "content": [
     {
       "sentence_number": 1,
-      "german_sentence": "German sentence (original or translated).",
-      "english_translation": "Accurate English translation.",
+      "german_sentence": "German sentence.",
+      "english_translation": "English translation.",
       "word_meanings": { "GermanWord": "English meaning" },
       "grammar_notes": "Optional grammar note"
     }
   ],
   "vocabulary_highlights": [
-    { "word": "german_word", "translation": "English meaning", "usage_example": "Example sentence in German" }
+    { "word": "german_word", "translation": "English meaning", "usage_example": "Example in German" }
   ],
   "quiz": [
     {
-      "question": "Comprehension question in German?",
-      "options": ["Option 1", "Option 2", "Option 3", "Option 4"],
-      "correct_answer": "Option 1",
-      "explanation": "Why this is correct"
+      "question": "Question in German?",
+      "options": ["A", "B", "C", "D"],
+      "correct_answer": "A",
+      "explanation": "Why A is correct"
     }
   ]
 }
 
 Rules:
-- Process EVERY sentence sequentially, do not skip any
+- Process ALL sentences sequentially, number them
 - Include key words in word_meanings, strip punctuation from keys
-- Create 5-7 varied quiz questions in German
-- vocabulary_highlights should contain 6-10 important words with usage examples"""
+- 5-7 quiz questions in German
+- 6-10 vocabulary highlights"""
 
     payload = {
         "model": "llama-3.3-70b-versatile",
@@ -180,16 +285,16 @@ Rules:
         "max_tokens": 16000
     }
 
-    response = requests.post(url, headers=headers, json=payload, timeout=90)
+    r = requests.post(url, headers=headers, json=payload, timeout=90)
 
-    if response.status_code == 401:
+    if r.status_code == 401:
         raise Exception("invalid_api_key: Your Groq API key is invalid or expired.")
-    if response.status_code == 429:
-        raise Exception("rate_limit: Too many requests. Please wait a moment and try again.")
-    if response.status_code != 200:
-        raise Exception(f"groq_error_{response.status_code}: {response.text[:200]}")
+    if r.status_code == 429:
+        raise Exception("rate_limit: Too many requests. Please wait and try again.")
+    if r.status_code != 200:
+        raise Exception(f"groq_error_{r.status_code}: {r.text[:200]}")
 
-    return response.json()['choices'][0]['message']['content']
+    return r.json()['choices'][0]['message']['content']
 
 # ── HANDLER ────────────────────────────────────────────────────────
 
@@ -197,20 +302,20 @@ class handler(BaseHTTPRequestHandler):
 
     def do_OPTIONS(self):
         self.send_response(200)
-        self._cors_headers()
+        self._cors()
         self.end_headers()
 
     def do_POST(self):
         try:
             length = int(self.headers.get('Content-Length', 0))
             body = json.loads(self.rfile.read(length))
-
             api_key = body.get('api_key', '').strip()
+
             if not api_key:
                 self._respond(400, {'success': False, 'error': 'API key is required'})
                 return
 
-            mode = body.get('mode', '')  # 'pdf' or 'url'
+            mode = body.get('mode', '')
 
             if mode == 'pdf':
                 pdf_b64 = body.get('pdf_data', '')
@@ -218,10 +323,9 @@ class handler(BaseHTTPRequestHandler):
                 if not pdf_b64:
                     self._respond(400, {'success': False, 'error': 'No PDF data provided'})
                     return
-                raw_text = extract_text_from_pdf(pdf_b64)
+                content = extract_text_from_pdf(pdf_b64)
                 title = filename.replace('.pdf', '').replace('_', ' ').replace('-', ' ')
                 source_url = f"PDF: {filename}"
-                content = raw_text
 
             elif mode == 'url':
                 url_input = body.get('url', '').strip()
@@ -235,8 +339,8 @@ class handler(BaseHTTPRequestHandler):
                 self._respond(400, {'success': False, 'error': f'Unknown mode: {mode}'})
                 return
 
-            if len(content.strip()) < 100:
-                raise Exception("Not enough text content found. Please try a different source.")
+            if not content or len(content.strip()) < 100:
+                raise Exception("Not enough text found. Try a different source.")
 
             lesson_data = json.loads(generate_ai_lesson(title, content, api_key))
 
@@ -255,11 +359,11 @@ class handler(BaseHTTPRequestHandler):
     def _respond(self, status, data):
         self.send_response(status)
         self.send_header('Content-Type', 'application/json')
-        self._cors_headers()
+        self._cors()
         self.end_headers()
         self.wfile.write(json.dumps(data).encode())
 
-    def _cors_headers(self):
+    def _cors(self):
         self.send_header('Access-Control-Allow-Origin', '*')
         self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
         self.send_header('Access-Control-Allow-Headers', 'Content-Type')
