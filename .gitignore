@@ -1,3 +1,16 @@
-*.env
-*.app.py
-*.lesson_data.json
+# Don't commit these to git
+.env
+lesson_data.json
+app.py
+server.py
+__pycache__/
+*.pyc
+*.pyo
+.vercel
+venv/
+start.sh
+VERCEL_DEPLOY.md
+FIX_404.md
+DEPLOYMENT.md
+QUICKSTART.md
+README_OLD.md
