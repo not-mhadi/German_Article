@@ -1,4 +1,3 @@
-from http.server import BaseHTTPRequestHandler
 import json
 import requests
 from bs4 import BeautifulSoup
@@ -153,73 +152,81 @@ Process the entire article systematically. Do not stop until complete."""
     
     return response.choices[0].message.content
 
-class handler(BaseHTTPRequestHandler):
-    def do_POST(self):
-        try:
-            # Read request body
-            content_length = int(self.headers['Content-Length'])
-            post_data = self.rfile.read(content_length)
-            data = json.loads(post_data.decode('utf-8'))
-            
-            # Get API key from request
-            api_key = data.get('api_key')
-            
-            if not api_key:
-                self.send_response(400)
-                self.send_header('Content-type', 'application/json')
-                self.send_header('Access-Control-Allow-Origin', '*')
-                self.end_headers()
-                self.wfile.write(json.dumps({
+def handler(event, context):
+    """Vercel serverless function handler."""
+    
+    # Handle CORS preflight
+    if event.get('httpMethod') == 'OPTIONS':
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Access-Control-Allow-Origin': '*',
+                'Access-Control-Allow-Methods': 'POST, OPTIONS',
+                'Access-Control-Allow-Headers': 'Content-Type'
+            },
+            'body': ''
+        }
+    
+    try:
+        # Parse request body
+        body = json.loads(event.get('body', '{}'))
+        api_key = body.get('api_key')
+        
+        if not api_key:
+            return {
+                'statusCode': 400,
+                'headers': {
+                    'Content-Type': 'application/json',
+                    'Access-Control-Allow-Origin': '*'
+                },
+                'body': json.dumps({
                     'success': False,
                     'error': 'API key is required'
-                }).encode())
-                return
-            
-            # Get random article
-            article_url = get_random_article_url()
-            
-            # Scrape article
-            title, content = scrape_article_text(article_url)
-            
-            if len(content) < 200:
-                raise Exception("Content too short")
-            
-            # Generate lesson
-            lesson_json_string = generate_ai_lesson(title, content, api_key)
-            lesson_data = json.loads(lesson_json_string)
-            
-            # Add metadata
-            import datetime
-            output_data = {
-                "source_url": article_url,
-                "generated_at": datetime.datetime.now().isoformat(),
-                **lesson_data
+                })
             }
-            
-            # Send response
-            self.send_response(200)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            
-            self.wfile.write(json.dumps({
+        
+        # Get random article
+        article_url = get_random_article_url()
+        
+        # Scrape article
+        title, content = scrape_article_text(article_url)
+        
+        if len(content) < 200:
+            raise Exception("Content too short")
+        
+        # Generate lesson
+        lesson_json_string = generate_ai_lesson(title, content, api_key)
+        lesson_data = json.loads(lesson_json_string)
+        
+        # Add metadata
+        import datetime
+        output_data = {
+            "source_url": article_url,
+            "generated_at": datetime.datetime.now().isoformat(),
+            **lesson_data
+        }
+        
+        return {
+            'statusCode': 200,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
                 'success': True,
                 'data': output_data
-            }).encode())
-            
-        except Exception as e:
-            self.send_response(500)
-            self.send_header('Content-type', 'application/json')
-            self.send_header('Access-Control-Allow-Origin', '*')
-            self.end_headers()
-            self.wfile.write(json.dumps({
+            })
+        }
+        
+    except Exception as e:
+        return {
+            'statusCode': 500,
+            'headers': {
+                'Content-Type': 'application/json',
+                'Access-Control-Allow-Origin': '*'
+            },
+            'body': json.dumps({
                 'success': False,
                 'error': str(e)
-            }).encode())
-    
-    def do_OPTIONS(self):
-        self.send_response(200)
-        self.send_header('Access-Control-Allow-Origin', '*')
-        self.send_header('Access-Control-Allow-Methods', 'POST, OPTIONS')
-        self.send_header('Access-Control-Allow-Headers', 'Content-Type')
-        self.end_headers()
+            })
+        }
