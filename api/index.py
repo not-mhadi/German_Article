@@ -8,7 +8,7 @@ import xml.etree.ElementTree as ET
 import datetime
 
 def get_random_article_url():
-    rss_url = "https://www.deutschlandfunk.de/podcast-nachrichtenleicht-der-wochenrueckblick-in-einfacher-sprache-100.html"
+    rss_url = "https://www.nachrichtenleicht.de/nachrichtenleicht-nachrichten-100.rss"
     headers = {'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64)'}
     response = requests.get(rss_url, headers=headers, timeout=10)
     root = ET.fromstring(response.content)
