@@ -5,7 +5,6 @@ from bs4 import BeautifulSoup
 import random
 import re
 import xml.etree.ElementTree as ET
-from openai import OpenAI
 import datetime
 
 def get_random_article_url():
@@ -59,7 +58,12 @@ def scrape_article_text(article_url):
     return title, content
 
 def generate_ai_lesson(title, content, api_key):
-    client = OpenAI(api_key=api_key, base_url="https://api.groq.com/openai/v1")
+    # Call Groq API directly via HTTP — no SDK needed, no version issues
+    url = "https://api.groq.com/openai/v1/chat/completions"
+    headers = {
+        "Authorization": f"Bearer {api_key}",
+        "Content-Type": "application/json"
+    }
 
     system_prompt = """You are an expert German language teacher creating interactive learning materials.
 Process this German news article into a structured lesson.
@@ -96,17 +100,27 @@ Rules:
 - Create 5-7 quiz questions in German
 - Do not stop until the entire article is processed"""
 
-    response = client.chat.completions.create(
-        model="llama-3.3-70b-versatile",
-        messages=[
+    payload = {
+        "model": "llama-3.3-70b-versatile",
+        "messages": [
             {"role": "system", "content": system_prompt},
             {"role": "user", "content": f"Title: {title}\n\nContent:\n{content}"}
         ],
-        response_format={"type": "json_object"},
-        temperature=0.3,
-        max_tokens=16000
-    )
-    return response.choices[0].message.content
+        "response_format": {"type": "json_object"},
+        "temperature": 0.3,
+        "max_tokens": 16000
+    }
+
+    response = requests.post(url, headers=headers, json=payload, timeout=90)
+
+    if response.status_code == 401:
+        raise Exception("invalid_api_key: Your Groq API key is invalid or expired.")
+    if response.status_code == 429:
+        raise Exception("rate_limit: Too many requests. Please wait a moment and try again.")
+    if response.status_code != 200:
+        raise Exception(f"groq_error_{response.status_code}: {response.text[:200]}")
+
+    return response.json()['choices'][0]['message']['content']
 
 
 class handler(BaseHTTPRequestHandler):
@@ -144,7 +158,8 @@ class handler(BaseHTTPRequestHandler):
             })
 
         except Exception as e:
-            self._respond(500, {'success': False, 'error': str(e)})
+            error_msg = str(e)
+            self._respond(500, {'success': False, 'error': error_msg})
 
     def _respond(self, status, data):
         self.send_response(status)
